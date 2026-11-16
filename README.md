@@ -54,78 +54,83 @@ El prototipo está diseñado y adaptado a las proporciones de un smartphone mode
 Este prototipo permite realizar el recorrido completo de evaluación de usabilidad para el **Módulo 1**:
 
 ```
-Menú Principal ➡️ Selección de Módulos ➡️ Pueblo de San Pedro ➡️ Actividad 1 (Maleta) ➡️ Actividad 2 (Sopa de Letras) ➡️ Actividad 3 (Speaking Simulado) ➡️ Recompensa Final (Llave Dorada + Chullo)
+Menú Principal ➡️ Mapa General 2D ➡️ Pueblo de San Pedro ➡️ Actividad 1 (Maleta) ➡️ Actividad 2 (Sopa de Letras) ➡️ Actividad 3 (Unir con Líneas) ➡️ Actividad 4 (Speaking Simulado) ➡️ Recompensa Final (Llave Dorada + Chullo) ➡️ Desbloqueo Módulo 2
 ```
 
 ### 1. Menú Principal y Personalización
-- **`INICIAR PARTIDA`**: Ingresa directamente a la pantalla de selección de niveles (Ruta del Valle).
+- **`INICIAR PARTIDA`**: Ingresa directamente al mapa general 2D del valle.
 - **`Personalizar Avatar`**: Permite cambiar el nombre del guía, color del poncho/vestimenta tradicional y equipar accesorios en la cabeza (**Chullo andino**, **Sombrero de paja**, **Gorra de guía** o el **Chullo Dorado de Guía** al ser desbloqueado).
 - **`Bitácora`**: Muestra las insignias obtenidas y el historial de actividades con puntajes.
 - **`Ajustes`**: Pausa, controles y opción para reiniciar el progreso.
 
-### 2. Mapa Lineal de 6 Módulos (World Map)
-- **Módulo 1 (San Pedro de las Nubes):** Totalmente jugable y accesible con el botón *"¡Entrar al Módulo 1!"*.
-- **Módulos 2 al 6:** Representados como bloqueados con candado 🔒. Al intentar entrar, una ventana pequeña explica que se requiere completar el Módulo 1 y portar la **Llave Dorada**.
+### 2. Mapa Explorable del Valle Andino (Overworld 2D)
+- **Paisaje y Ciudades en 2D:** El mapa general 2D conecta las 6 ciudades/asentamientos andinos.
+- **Movimiento Libre:** El jugador puede caminar libremente por el mapa del valle con WASD, flechas, toques en pantalla o el D-Pad táctil.
+- **Módulo 1 (San Pedro de las Nubes):** Totalmente accesible. Acercarse o tocarlo despliega el botón `[ENTRAR]` para ingresar al pueblo y sus actividades.
+- **Módulo 2 (Mercado de Artesanías):**
+  - **Bloqueado con candado 🔒** mientras no se haya completado el Módulo 1.
+  - **Desbloqueo con Llave:** Al terminar el Módulo 1 y recibir la **Llave Dorada**, al interactuar con el Módulo 2 en el mapa, **el candado se desbloquea**, se celebra con confeti y se abre la interacción con Don Fernando (Guardián del Mercado).
+- **Módulos 3 al 6:** Representados con candados 🔒 no interactivos, indicando que requieren desbloquear los niveles previos en orden.
 
 ### 3. Exploración del Pueblo de San Pedro (Módulo 1)
-- **Movimiento:** 
-  - **Teclado:** Teclas `W`, `A`, `S`, `D` o las flechas de dirección.
-  - **D-Pad Virtual:** Cruz táctil en la esquina inferior izquierda.
-  - **Clic en el suelo:** Tocar cualquier parte del suelo para que el personaje camine hasta allí.
-- **Interacción:**
-  - Presionar tecla `[E]` o tocar el botón circular dorado **`[HABLAR]`** en la esquina inferior derecha.
-  - O tocar directamente a cualquier NPC en la pantalla:
-    - 🤠 **Mr. John Miller:** Turista norteamericano en la plaza que perdió su equipaje.
-    - 🧔🏽 **Don Mateo:** Jefe de Información Turística (al norte).
-    - 👵🏽 **Doña Rosa:** Maestra artesana de tejidos (al oeste).
+- **Movimiento:** Teclado (WASD / Flechas), D-Pad virtual en pantalla o toque en el suelo.
+- **Interacción:** Presionar tecla `[E]`, tocar el botón `[HABLAR]` o tocar directamente a los NPCs:
+  - 🤠 **Mr. John Miller:** Turista norteamericano en la plaza.
+  - 🧔🏽 **Don Mateo:** Jefe de Información Turística (al norte).
+  - 👵🏽 **Doña Rosa:** Maestra artesana de tejidos (al oeste).
 
 ### 4. Actividad 1: Búsqueda del Equipaje Perdido
 1. Habla con **Mr. John** en la plaza. Explica que perdió su equipaje.
-2. Al aceptar la misión, aparece la **pantalla de introducción pedagógica de vocabulario** (*Backpack, Blue, Circle, Lost*) con explicaciones e instrucciones.
-3. John especifica en el diálogo: *"It is a blue backpack with a circle in the center. ¡Es una maleta azul con un círculo!"*.
-4. Aparecen **4 maletas distribuidas por el pueblo**:
-   - 🔴 Roja con cuadrado (*red backpack with a square*).
-   - 🟢 Verde con triángulo (*green backpack with a triangle*).
-   - 🟡 Amarilla con estrella (*yellow backpack with a star*).
-   - 🔵 **Azul con círculo (*blue backpack with a circle - Correcta*)**.
-5. **Retroalimentación pedagógica:** Si el participante toca una maleta equivocada, surge una ventana en español explicando las características en inglés de lo que seleccionó frente a lo que John pidió, con opción de reintentar.
-6. Al tocar la maleta correcta, se obtiene la insignia *"Ojo de Halcón"*, puntos XP y se actualiza la misión para entregársela a John.
+2. Pantalla introductoria de vocabulario (*Backpack, Blue, Circle, Lost*).
+3. John describe su maleta: *"blue backpack with a circle"*.
+4. Aparecen **4 maletas distribuidas por el pueblo** (Roja con cuadrado, Verde con triángulo, Amarilla con estrella, Azul con círculo).
+5. Retroalimentación en español si se elige una errónea, o éxito al encontrar la maleta azul con círculo (+100 XP, insignia *"Ojo de Halcón"*).
 
 ### 5. Actividad 2: Sopa de Letras Turística
 1. Habla con John para devolverle la maleta; él pedirá repasar las palabras clave de su libreta de viaje.
-2. Aparece la pantalla de vocabulario con las 4 palabras: **`backpack`**, **`blue`**, **`circle`**, **`cloudy`**.
-3. Se despliega la cuadrícula interactiva de 8x8 con **ilustraciones gráficas de cada objeto**.
-4. Al seleccionar las letras correctas en la cuadrícula o tocar una palabra:
-   - Aparece un **visto verde (`✓`) directamente sobre el objeto gráfico**.
-   - Si se selecciona una combinación errónea, se entrega retroalimentación pedagógica en español.
-5. Al completar las 4 palabras, se otorga la insignia *"Maestro de las Letras"* y +100 puntos.
+2. Pantalla de vocabulario con las 4 palabras: **`backpack`**, **`blue`**, **`circle`**, **`cloudy`**.
+3. Cuadrícula interactiva de 8x8 con **ilustraciones gráficas de cada objeto**.
+4. Al seleccionar las letras correctas, aparece un **visto verde (`✓`) directamente sobre el objeto gráfico**.
+5. Al completar las 4 palabras, se otorga la insignia *"Maestro de las Letras"* (+100 XP).
 
-### 6. Actividad 3: Listening & Speaking (Simulación 100% Visual)
-- Flujo interactivo sin dependencias de hardware de sonido:
-  1. Se presenta la frase modelo: *"Excuse me, I lost my blue backpack."* con su traducción.
-  2. El usuario toca el botón de micrófono 🎙️ **"Toca para Grabar"**.
-  3. Se muestra el símbolo visual de escucha: 🔴 *"Escuchando tu voz... (00:0X)"* con ondas 2D activas.
-  4. Se muestra el botón: ⏹️ *"Parar Grabación"*.
-  5. Al detenerse, aparece el botón: 📤 *"Enviar"*.
-  6. Al enviar, surge la pantalla de felicitación 🎉 con precisión del 100%, +150 XP y la insignia *"Voz del Valle"*.
+### 6. Actividad 3: Asociación de Oraciones y Unir con Líneas
+1. Habla con John; pregunta si conoces a alguien en tu familia que le pueda ayudar en el pueblo.
+2. **Pantalla de Vocabulario y Grammar:** Explica la estructura de oraciones: Sujeto + is + Profesión + Lugar de trabajo.
+3. **Pantalla de Actividad:**
+   - 3 oraciones modelo para leer o escuchar:
+     1. *"Mi tío es un policía trabajando en la estación de policía"* (*"My uncle is a police officer working at the police station"*).
+     2. *"Mi tía es una recepcionista en un hotel"* (*"My aunt is a receptionist in a hotel"*).
+     3. *"Mi primo es un chef en un restaurante"* (*"My cousin is a chef in a restaurant"*).
+   - **9 botones distribuidos en 3 columnas:**
+     - **Columna 1 (Familia):** `my uncle` 👨🏽, `my aunt` 👩🏽, `my cousin` 👦🏽.
+     - **Columna 2 (Profesión):** `chef` 👨‍🍳, `receptionist` 💁‍♀️, `police officer` 👮‍♂️.
+     - **Columna 3 (Lugar):** `police station` 🚓, `restaurant` 🍽️, `hotel` 🏨.
+   - **Simulación de unión con líneas:** El usuario toca en orden (Familiar ➡️ Profesión ➡️ Lugar).
+   - Si se equivoca, recibe retroalimentación pedagógica en español y puede reintentar.
+   - Al completar las 3 líneas, recibe la insignia *"Conector del Pueblo"* (+140 XP).
 
-### 7. Cierre del Módulo 1 y Recompensas Obligatorias
+### 7. Actividad 4: Listening & Speaking (Simulación 100% Visual)
+- Frase modelo: *"Excuse me, I lost my blue backpack."*
+- Flujo interactivo: Micrófono 🎙️ ➡️ Escuchando 🔴 ➡️ Parar ⏹️ ➡️ Enviar 📤 ➡️ Felicitaciones 🎉 (+150 XP, insignia *"Voz del Valle"*).
+
+### 8. Cierre del Módulo 1 y Recompensas Obligatorias
 - Habla con **Don Mateo** en el Centro de Información Turística.
-- Don Mateo felicita al guía y le hace entrega obligatoria de:
-  - 🗝️ **La Llave Dorada de San Pedro** (artefacto necesario para abrir los siguientes 5 módulos).
-  - 👑 **El Chullo Sagrado de Guía Experto** (accesorio cosmético que ahora se puede equipar en el avatar desde el menú de personalización).
+- Entrega de:
+  - 🗝️ **La Llave Dorada de San Pedro** (artefacto que desbloquea el Módulo 2 en el mapa general).
+  - 👑 **El Chullo Sagrado de Guía Experto** (accesorio cosmético equipable).
 
 ---
 
 ## ⚡ Barra de Atajos Rápidos para Pruebas (Quick Test Bar)
 
-Para agilizar las pruebas de usabilidad sin obligar a repetir todo el recorrido, en la esquina superior derecha del mapa del pueblo se incluyó una barra de atajos directos:
+En la esquina superior derecha del pueblo se incluye la barra de atajos directos:
 
 | Botón | Acción Inmediata |
 |---|---|
 | **`🎒 Act. 1`** | Abre la pantalla de vocabulario de la maleta y muestra las 4 maletas en el mapa. |
 | **`🔤 Act. 2`** | Abre directamente la Sopa de Letras con tarjetas gráficas. |
-| **`🎙️ Act. 3`** | Abre directamente la actividad de Speaking simulada. |
+| **`🔗 Act. 3`** | Abre directamente la Asociación de Oraciones y unión con líneas en 3 columnas. |
+| **`🎙️ Act. 4`** | Abre directamente la actividad de Speaking simulada. |
 | **`🗝️ Llave`** | Despliega la entrega de la Llave Dorada y el Chullo cosmético con Don Mateo. |
 
 ---

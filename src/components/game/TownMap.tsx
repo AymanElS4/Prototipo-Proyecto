@@ -99,6 +99,10 @@ export const TownMap: React.FC = () => {
   };
 
   const triggerActivity3 = () => {
+    setActiveActivityModal('sentence_matching');
+  };
+
+  const triggerActivity4 = () => {
     setActiveActivityModal('listening_speaking' as any);
   };
 
@@ -194,7 +198,7 @@ export const TownMap: React.FC = () => {
           </button>
           <button
             onClick={triggerActivity3}
-            title="Abrir Actividad 3: Speaking Simulado"
+            title="Abrir Actividad 3: Unir con Líneas"
             style={{
               background: '#fef3c7',
               border: '1px solid #d97706',
@@ -204,7 +208,21 @@ export const TownMap: React.FC = () => {
               color: '#92400e'
             }}
           >
-            🎙️ Act. 3
+            🔗 Act. 3
+          </button>
+          <button
+            onClick={triggerActivity4}
+            title="Abrir Actividad 4: Speaking Simulado"
+            style={{
+              background: '#fef3c7',
+              border: '1px solid #d97706',
+              borderRadius: '6px',
+              padding: '3px 6px',
+              cursor: 'pointer',
+              color: '#92400e'
+            }}
+          >
+            🎙️ Act. 4
           </button>
           <button
             onClick={triggerReward}

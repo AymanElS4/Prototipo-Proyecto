@@ -7,8 +7,8 @@ interface QuestContextType {
   setSuitcasesVisible: (visible: boolean) => void;
   hasFoundBackpack: boolean;
   setHasFoundBackpack: (found: boolean) => void;
-  activeActivityModal: 'none' | 'activity_1_intro' | 'activity_2_intro' | 'word_search' | 'listening_speaking' | 'module_complete';
-  setActiveActivityModal: (modal: 'none' | 'activity_1_intro' | 'activity_2_intro' | 'word_search' | 'listening_speaking' | 'module_complete') => void;
+  activeActivityModal: 'none' | 'activity_1_intro' | 'activity_2_intro' | 'word_search' | 'activity_3_intro' | 'sentence_matching' | 'listening_speaking' | 'module_complete';
+  setActiveActivityModal: (modal: 'none' | 'activity_1_intro' | 'activity_2_intro' | 'word_search' | 'activity_3_intro' | 'sentence_matching' | 'listening_speaking' | 'module_complete') => void;
   activeDialogueNpcId: string | null;
   activeDialogueNodeId: string | null;
   openDialogue: (npcId: string, nodeId?: string) => void;
@@ -45,8 +45,20 @@ const INITIAL_QUEST: Quest = {
     },
     {
       id: 'step_word_search',
-      instruction: 'Resuelve la Sopa de Letras con las palabras clave aprendidas.',
+      instruction: 'Resuelve la Sopa de Letras con las palabras clave aprendidas (Act. 2).',
       targetNpcOrObject: 'word_search',
+      isCompleted: false
+    },
+    {
+      id: 'step_sentence_matching',
+      instruction: 'Une con líneas los miembros de familia, profesiones y lugares (Act. 3).',
+      targetNpcOrObject: 'sentence_matching',
+      isCompleted: false
+    },
+    {
+      id: 'step_speaking',
+      instruction: 'Practica la pronunciación en inglés con el micrófono simulado (Act. 4).',
+      targetNpcOrObject: 'listening_speaking',
       isCompleted: false
     },
     {
@@ -99,7 +111,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [activeActivityModal, setActiveActivityModal] = useState<
-    'none' | 'activity_1_intro' | 'activity_2_intro' | 'word_search' | 'listening_speaking' | 'module_complete'
+    'none' | 'activity_1_intro' | 'activity_2_intro' | 'word_search' | 'activity_3_intro' | 'sentence_matching' | 'listening_speaking' | 'module_complete'
   >('none');
 
   const [activeDialogueNpcId, setActiveDialogueNpcId] = useState<string | null>(null);
@@ -130,7 +142,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setActiveDialogueNodeId('start');
         }
       } else if (npcId === 'mateo') {
-        if (stepIdx >= 4) {
+        if (stepIdx >= 5) {
           setActiveDialogueNodeId('mateo_reward');
         } else {
           setActiveDialogueNodeId('mateo_start');

@@ -126,7 +126,7 @@ export const ListeningSpeakingModal: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <span style={{ fontSize: '11px', fontWeight: 800, color: '#b45309', textTransform: 'uppercase' }}>
-              Práctica Oral • Speaking & Listening
+              Práctica Oral • Actividad 4
             </span>
             <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>
               Pronunciación Funcional

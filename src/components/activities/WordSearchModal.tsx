@@ -116,7 +116,7 @@ export const WordSearchModal: React.FC = () => {
       isSuccess: true,
       tip: 'Mr. John está impresionado con tu vocabulario. ¡Habla con Don Mateo para reclamar tu recompensa!',
       onContinue: () => {
-        openDialogue('john', 'all_done_john');
+        openDialogue('john', 'ask_for_help');
       }
     });
   };

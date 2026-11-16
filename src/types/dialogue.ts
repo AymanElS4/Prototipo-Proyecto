@@ -1,7 +1,7 @@
 export interface DialogueOption {
   text: string;
   nextDialogId?: string;
-  action?: 'accept_quest' | 'open_activity_intro' | 'open_listening_speaking' | 'close' | 'give_hint';
+  action?: 'accept_quest' | 'open_activity_intro' | 'open_activity_3' | 'open_listening_speaking' | 'close' | 'give_hint';
 }
 
 export interface DialogueNode {

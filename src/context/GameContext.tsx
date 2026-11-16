@@ -18,6 +18,7 @@ interface GameContextType {
   screen: GameScreen;
   setScreen: (screen: GameScreen) => void;
   modules: ModuleInfo[];
+  unlockModule: (id: number) => void;
   currentModuleId: number;
   setCurrentModuleId: (id: number) => void;
   settings: GameSettings;
@@ -109,6 +110,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     sfx.playClick();
   };
 
+  const unlockModule = (id: number) => {
+    setModules(prev => {
+      const updated = prev.map(m => m.id === id ? { ...m, isUnlocked: true } : m);
+      try {
+        localStorage.setItem('rpg_modules', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   const updateSettings = (newSettings: Partial<GameSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
@@ -161,6 +172,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         screen,
         setScreen,
         modules,
+        unlockModule,
         currentModuleId,
         setCurrentModuleId,
         settings,

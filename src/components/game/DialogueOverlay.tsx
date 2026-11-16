@@ -64,6 +64,12 @@ export const DialogueOverlay: React.FC = () => {
       return;
     }
 
+    if (option.action === 'open_activity_3') {
+      closeDialogue();
+      setActiveActivityModal('sentence_matching');
+      return;
+    }
+
     if (option.action === 'open_listening_speaking') {
       closeDialogue();
       setActiveActivityModal('listening_speaking');

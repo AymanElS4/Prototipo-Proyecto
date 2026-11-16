@@ -91,17 +91,57 @@ export const NPCS_DATA: Record<string, NPCData> = {
           }
         ]
       },
-      all_done_john: {
-        id: 'all_done_john',
+      ask_for_help: {
+        id: 'ask_for_help',
         speaker: 'Mr. John',
         speakerRole: 'Turista agradecido',
+        avatarIcon: '🤔',
+        text: '¡Increíble cómo encontraste las palabras en la libreta! Por cierto, aún necesito hacer trámites y almorzar en el pueblo... ¿Sabes quién me podría ayudar?',
+        englishSnippet: 'Do you know who could help me in town?',
+        options: [
+          {
+            text: '¡Sí! Mi familia trabaja en varios lugares de San Pedro. 🤝',
+            nextDialogId: 'matching_intro_prompt'
+          }
+        ]
+      },
+      matching_intro_prompt: {
+        id: 'matching_intro_prompt',
+        speaker: 'Mr. John',
+        speakerRole: 'Turista curioso',
+        avatarIcon: '📝',
+        text: '¡Genial! Déjame anotar las oraciones sobre tu tío, tu tía y tu primo, qué profesiones tienen y en qué lugares trabajan.',
+        options: [
+          {
+            text: '¡Unir con líneas las oraciones! (Actividad 3) 🔗',
+            action: 'open_activity_3'
+          }
+        ]
+      },
+      after_matching_john: {
+        id: 'after_matching_john',
+        speaker: 'Mr. John',
+        speakerRole: 'Turista impresionado',
         avatarIcon: '🌟',
-        text: '¡Increíble! Descifraste la sopa de letras. Ahora practiquemos la pronunciación en inglés para pedir ayuda con el equipaje.',
+        text: '¡Qué gran familia tienes en San Pedro! Ahora solo nos falta practicar la pronunciación oral de la frase en inglés con el micrófono.',
         englishSnippet: 'Excuse me, I lost my blue backpack.',
         options: [
           {
-            text: '¡Practicar pronunciación! 🎙️',
+            text: '¡Practicar pronunciación oral! (Actividad 4) 🎙️',
             action: 'open_listening_speaking'
+          }
+        ]
+      },
+      all_done_john: {
+        id: 'all_done_john',
+        speaker: 'Mr. John',
+        speakerRole: 'Turista feliz',
+        avatarIcon: '👑',
+        text: 'You are an incredible guide! Has completado todas las actividades del Módulo 1. Don Mateo en el Centro de Información tiene la Llave Dorada para ti.',
+        options: [
+          {
+            text: '¡Ir con Don Mateo por la Llave! 🗝️',
+            action: 'close'
           }
         ]
       }

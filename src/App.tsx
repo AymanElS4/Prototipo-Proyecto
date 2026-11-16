@@ -17,6 +17,7 @@ import { FeedbackModal } from './components/ui/FeedbackModal';
 import { DialogueOverlay } from './components/game/DialogueOverlay';
 import { ActivityIntroModal } from './components/activities/ActivityIntroModal';
 import { WordSearchModal } from './components/activities/WordSearchModal';
+import { SentenceMatchingModal } from './components/activities/SentenceMatchingModal';
 import { ListeningSpeakingModal } from './components/activities/ListeningSpeakingModal';
 import { ModuleOneCompleteModal } from './components/activities/ModuleOneCompleteModal';
 
@@ -113,6 +114,7 @@ const AppContent: React.FC = () => {
       <DialogueOverlay />
       <ActivityIntroModal />
       <WordSearchModal />
+      <SentenceMatchingModal />
       <ListeningSpeakingModal />
       <ModuleOneCompleteModal />
       <FeedbackModal />
