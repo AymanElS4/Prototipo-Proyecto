@@ -11,8 +11,9 @@ export const GameHUD: React.FC = () => {
   const { quest, setActiveActivityModal, setSuitcasesVisible, restartLevelOne } = useQuest();
   const [isActivitiesMenuOpen, setIsActivitiesMenuOpen] = useState(false);
 
-  // In the Main Menu or Level Select World Map, hide the top status HUD completely
-  if (screen === 'main_menu' || screen === 'world_map') return null;
+  // Hide the global game HUD in Main Menu, World Map AND in Avatar Customizer
+  // to prevent HUD statistics and top bars from colliding with customizer buttons
+  if (screen === 'main_menu' || screen === 'world_map' || screen === 'customizer') return null;
 
   const currentStep = quest?.steps && quest.steps[quest.currentStepIndex];
 
@@ -50,7 +51,7 @@ export const GameHUD: React.FC = () => {
       gap: '6px',
       pointerEvents: 'none'
     }}>
-      {/* Top Bar Stats (Línea 1: Nivel, Monedas y Controles) */}
+      {/* Top Bar Stats */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -118,12 +119,11 @@ export const GameHUD: React.FC = () => {
           </span>
         </div>
 
-        {/* Controls Row: Online, Bitacora, Sonido, Actividades, Pausa */}
+        {/* Controls Row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {/* Simulated Online/Offline Toggle */}
           <button
             onClick={toggleOnlineMode}
-            title={settings.isOnlineMode ? 'Modo Online (Conectado)' : 'Modo Offline (Guardado local)'}
+            title={settings.isOnlineMode ? 'Modo Online' : 'Modo Offline'}
             style={{
               padding: '4px 6px',
               borderRadius: '6px',
@@ -151,7 +151,6 @@ export const GameHUD: React.FC = () => {
             )}
           </button>
 
-          {/* Bitácora / Logros */}
           <button
             onClick={() => setIsHistoryOpen(true)}
             title="Bitácora y Logros"
@@ -171,7 +170,6 @@ export const GameHUD: React.FC = () => {
             <BookOpen size={14} />
           </button>
 
-          {/* Toggle Sonido rápido */}
           <button
             onClick={() => {
               const nextVal = !settings.soundEnabled;
@@ -196,7 +194,7 @@ export const GameHUD: React.FC = () => {
             {settings.soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
           </button>
 
-          {/* Menú de Actividades (SOLO VISIBLE DENTRO DEL NIVEL) */}
+          {/* Menú de Actividades (Solo dentro del nivel) */}
           {screen === 'town_map' && (
             <div style={{ position: 'relative' }}>
               <button
@@ -224,7 +222,6 @@ export const GameHUD: React.FC = () => {
                 <ChevronDown size={10} />
               </button>
 
-              {/* Dropdown del Menú de Actividades */}
               {isActivitiesMenuOpen && (
                 <div 
                   className="rpg-box animate-float"
@@ -351,7 +348,6 @@ export const GameHUD: React.FC = () => {
             </div>
           )}
 
-          {/* Pause Menu */}
           <button
             onClick={() => {
               try { sfx.playPop(); } catch {}
@@ -376,7 +372,7 @@ export const GameHUD: React.FC = () => {
         </div>
       </div>
 
-      {/* Línea 2: Botones de Salida/Reinicio e Indicador de Misión (Perfectamente alineados en fila sin solaparse) */}
+      {/* Línea 2: Controles dentro de nivel */}
       {screen === 'town_map' && (
         <div style={{
           display: 'flex',
@@ -385,7 +381,6 @@ export const GameHUD: React.FC = () => {
           width: '100%',
           pointerEvents: 'auto'
         }}>
-          {/* Botón Mapa */}
           <button
             onClick={() => setScreen('world_map')}
             style={{
@@ -408,7 +403,6 @@ export const GameHUD: React.FC = () => {
             <span>Mapa</span>
           </button>
 
-          {/* Quest Objective Tracker Pill */}
           {currentStep && (
             <div
               className="rpg-box"
@@ -441,7 +435,6 @@ export const GameHUD: React.FC = () => {
             </div>
           )}
 
-          {/* Botón Reiniciar Nivel */}
           <button
             onClick={() => {
               if (window.confirm('¿Deseas reiniciar el Nivel 1 para jugarlo desde el inicio?')) {

@@ -20,7 +20,9 @@ export interface PlayerCustomization {
   hairStyle: 'short' | 'curly' | 'braids' | 'ponytail';
   hairColor: string;
   outfitColor: string;
-  hat: 'none' | 'chullo' | 'sombrero' | 'gorra' | 'chullo_dorado';
+  hat: 'none' | 'montera' | 'chullo' | 'sombrero' | 'gorra' | 'chullo_dorado';
+  glasses?: 'none' | 'classic' | 'sunglasses';
+  pantsColor?: string;
 }
 
 export interface PlayerState {
