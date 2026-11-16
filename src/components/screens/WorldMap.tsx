@@ -5,6 +5,56 @@ import { useQuest } from '../../context/QuestContext';
 import { ArrowLeft, Lock, Unlock, CheckCircle2, ChevronRight, Sparkles, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+// ─── TinyRanch Sprite Helper ─────────────────────────────────────────────────
+// Tiles are 16×16px. We render them scaled to `size` px.
+interface SpriteProps {
+  sheet: string;       // path to spritesheet in /assets/tiny_ranch_map/
+  col: number;         // 0-based column in the spritesheet
+  row: number;         // 0-based row in the spritesheet
+  tileSize?: number;   // source tile size in px (default 16)
+  size?: number;       // rendered size in px (default 32)
+  style?: React.CSSProperties;
+  flip?: boolean;      // mirror horizontally
+}
+
+// Sheet dimensions map (width × height in px, actual file size)
+const SHEET_DIMS: Record<string, [number, number]> = {
+  'TinyFarm_Tiles.png':          [80,  48],
+  'TinyFarm_MapDecorations.png': [64,  48],
+  'TinyFarm_Structures.png':     [64, 128],
+  'TinyFarm_Animals.png':        [128, 48],
+  'TinyFarm_Items.png':          [56,  32],
+  'TinyFarm_Characters.png':     [64,  48],
+  'TinyFarm_Crops.png':          [64,  48],
+};
+
+const Sprite: React.FC<SpriteProps> = ({
+  sheet, col, row, tileSize = 16, size = 32, style, flip = false
+}) => {
+  const scale = size / tileSize;
+  const [sw, sh] = SHEET_DIMS[sheet] ?? [128, 128];
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        backgroundImage: `url(/assets/tiny_ranch_map/${sheet})`,
+        backgroundRepeat: 'no-repeat',
+        // Scale the entire sheet proportionally
+        backgroundSize: `${sw * scale}px ${sh * scale}px`,
+        imageRendering: 'pixelated',
+        transform: flip ? 'scaleX(-1)' : undefined,
+        flexShrink: 0,
+        // Offset to the correct tile
+        backgroundPosition: `-${col * size}px -${row * size}px`,
+        ...style,
+      }}
+    />
+  );
+};
+
+// (PathDot not used directly — inline decorations below)
+
 interface CityNode {
   id: number;
   name: string;
@@ -105,14 +155,12 @@ export const WorldMap: React.FC = () => {
   const handleCityClick = (city: CityNode) => {
     setSelectedCity(city);
 
-    // If clicking on Level 1, enter directly to Airport!
     if (city.id === 1) {
       setCurrentModuleId(1);
       setScreen('town_map');
       return;
     }
 
-    // If clicking on Level 2
     if (city.id === 2) {
       if (hasGoldenKey) {
         if (!isModule2Unlocked) {
@@ -137,7 +185,6 @@ export const WorldMap: React.FC = () => {
       return;
     }
 
-    // Locked levels (3 to 6)
     showFeedback({
       title: '¡Inténtalo de nuevo! / Try Again!',
       message: `El ${city.levelTitle} está cerrado con candado. Completa los niveles anteriores en orden para desbloquearlo.`,
@@ -158,7 +205,7 @@ export const WorldMap: React.FC = () => {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Top Header Bar exclusivo del Mapa de Niveles (Limpio y alineado) */}
+      {/* Top Header Bar */}
       <div style={{
         padding: '12px 14px',
         backgroundColor: '#1e293b',
@@ -169,7 +216,6 @@ export const WorldMap: React.FC = () => {
         zIndex: 30,
         boxShadow: '0 4px 10px rgba(0, 0, 0, 0.4)'
       }}>
-        {/* Botón Volver con Estilo de Piedra */}
         <button
           onClick={() => setScreen('main_menu')}
           className="stone-btn"
@@ -183,7 +229,6 @@ export const WorldMap: React.FC = () => {
           <span>Inicio</span>
         </button>
 
-        {/* Título Central */}
         <div style={{ textAlign: 'center' }}>
           <h2 style={{ fontSize: '13.5px', fontWeight: 900, color: '#f8fafc', margin: 0, letterSpacing: '0.5px' }}>
             MAPA DE NIVELES
@@ -193,7 +238,6 @@ export const WorldMap: React.FC = () => {
           </span>
         </div>
 
-        {/* Badge Llave Dorada / Estado */}
         <div style={{
           backgroundColor: hasGoldenKey ? '#14532d' : '#0f172a',
           border: hasGoldenKey ? '1.5px solid #22c55e' : '1.5px solid #475569',
@@ -224,66 +268,36 @@ export const WorldMap: React.FC = () => {
         backgroundPosition: '0 0, 12px 12px',
         overflow: 'hidden'
       }}>
-        {/* Winding stone path SVG connecting cities directly */}
-        <svg style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-          zIndex: 2
-        }}>
-          <path
-            d="M 18% 74% Q 12% 58% 22% 44% T 48% 32% T 48% 62% T 80% 46% T 78% 18%"
-            fill="none"
-            stroke="#e2e8f0"
-            strokeWidth="16"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity={0.9}
-          />
-          <path
-            d="M 18% 74% Q 12% 58% 22% 44% T 48% 32% T 48% 62% T 80% 46% T 78% 18%"
-            fill="none"
-            stroke="#94a3b8"
-            strokeWidth="10"
-            strokeDasharray="6 8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+
+        {/* ── CAMINO SECUENCIAL: 1→2→3→4→5→6 ── */}
+        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}>
+          {/* Borde exterior: marrón oscuro */}
+          <line x1="18%" y1="74%" x2="22%" y2="44%" stroke="#5c3a1e" strokeWidth="20" strokeLinecap="round"/>
+          <line x1="22%" y1="44%" x2="48%" y2="62%" stroke="#5c3a1e" strokeWidth="20" strokeLinecap="round"/>
+          <line x1="48%" y1="62%" x2="48%" y2="32%" stroke="#5c3a1e" strokeWidth="20" strokeLinecap="round"/>
+          <line x1="48%" y1="32%" x2="80%" y2="46%" stroke="#5c3a1e" strokeWidth="20" strokeLinecap="round"/>
+          <line x1="80%" y1="46%" x2="78%" y2="18%" stroke="#5c3a1e" strokeWidth="20" strokeLinecap="round"/>
+
+          {/* Relleno: tierra beige/sand */}
+          <line x1="18%" y1="74%" x2="22%" y2="44%" stroke="#c8a46e" strokeWidth="13" strokeLinecap="round"/>
+          <line x1="22%" y1="44%" x2="48%" y2="62%" stroke="#c8a46e" strokeWidth="13" strokeLinecap="round"/>
+          <line x1="48%" y1="62%" x2="48%" y2="32%" stroke="#c8a46e" strokeWidth="13" strokeLinecap="round"/>
+          <line x1="48%" y1="32%" x2="80%" y2="46%" stroke="#c8a46e" strokeWidth="13" strokeLinecap="round"/>
+          <line x1="80%" y1="46%" x2="78%" y2="18%" stroke="#c8a46e" strokeWidth="13" strokeLinecap="round"/>
         </svg>
 
-        {/* Natural Farm RPG scenery */}
-        <div style={{ position: 'absolute', top: '10%', left: '32%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/tree_spring.png" alt="" style={{ width: '42px', height: '62px', imageRendering: 'pixelated', filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.4))' }} />
-        </div>
-        <div style={{ position: 'absolute', top: '56%', left: '8%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/tree_fall.png" alt="" style={{ width: '38px', height: '58px', imageRendering: 'pixelated', filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.4))' }} />
-        </div>
-        <div style={{ position: 'absolute', top: '78%', left: '46%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/tree_spring.png" alt="" style={{ width: '40px', height: '60px', imageRendering: 'pixelated', filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.4))' }} />
-        </div>
-        <div style={{ position: 'absolute', top: '36%', right: '6%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/tree_fall.png" alt="" style={{ width: '38px', height: '58px', imageRendering: 'pixelated', filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.4))' }} />
-        </div>
+        {/* ── ÁRBOLES decorativos (MapDecorations: 4col×3row de 16px, sheet 64×48) ── */}
+        {/* Solo en zonas que NO tapan el camino ni los niveles */}
+        <div style={{ position: 'absolute', top: '8%',  left: '5%',   zIndex: 4, pointerEvents: 'none' }}><Sprite sheet="TinyFarm_MapDecorations.png" col={0} row={0} size={34} /></div>
+        <div style={{ position: 'absolute', top: '6%',  left: '32%',  zIndex: 4, pointerEvents: 'none' }}><Sprite sheet="TinyFarm_MapDecorations.png" col={2} row={0} size={32} /></div>
+        <div style={{ position: 'absolute', top: '8%',  right: '14%', zIndex: 4, pointerEvents: 'none' }}><Sprite sheet="TinyFarm_MapDecorations.png" col={1} row={0} size={34} /></div>
+        <div style={{ position: 'absolute', top: '50%', left: '5%',   zIndex: 4, pointerEvents: 'none' }}><Sprite sheet="TinyFarm_MapDecorations.png" col={3} row={1} size={32} /></div>
+        <div style={{ position: 'absolute', top: '55%', right: '5%',  zIndex: 4, pointerEvents: 'none' }}><Sprite sheet="TinyFarm_MapDecorations.png" col={0} row={1} size={34} /></div>
+        <div style={{ position: 'absolute', top: '78%', left: '40%',  zIndex: 4, pointerEvents: 'none' }}><Sprite sheet="TinyFarm_MapDecorations.png" col={1} row={2} size={32} /></div>
+        <div style={{ position: 'absolute', top: '80%', right: '6%',  zIndex: 4, pointerEvents: 'none' }}><Sprite sheet="TinyFarm_MapDecorations.png" col={2} row={2} size={30} /></div>
 
-        {/* Animals & Chest */}
-        <div style={{ position: 'absolute', top: '82%', left: '34%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/cow.png" alt="" style={{ width: '36px', height: '36px', imageRendering: 'pixelated', filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.3))' }} />
-        </div>
-        <div style={{ position: 'absolute', top: '38%', left: '36%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/chick.png" alt="" style={{ width: '18px', height: '18px', imageRendering: 'pixelated' }} />
-        </div>
-        <div style={{ position: 'absolute', top: '6%', left: '58%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/chicken.png" alt="" style={{ width: '22px', height: '22px', imageRendering: 'pixelated' }} />
-        </div>
-        <div style={{ position: 'absolute', top: '68%', right: '22%', zIndex: 3, pointerEvents: 'none' }}>
-          <img src="/assets/farm_rpg/sliced/chest_closed.png" alt="" style={{ width: '24px', height: '24px', imageRendering: 'pixelated', filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }} />
-        </div>
-
-        {/* Mountain background emojis */}
-        <div style={{ position: 'absolute', top: '4%', left: '12%', fontSize: '24px', opacity: 0.8, pointerEvents: 'none' }}>🏔️</div>
+        {/* Montañas */}
+        <div style={{ position: 'absolute', top: '4%',  left: '12%',  fontSize: '24px', opacity: 0.8, pointerEvents: 'none' }}>🏔️</div>
         <div style={{ position: 'absolute', top: '16%', right: '32%', fontSize: '26px', opacity: 0.8, pointerEvents: 'none' }}>🏔️</div>
 
         {/* Pure Pixel Art Level Objects */}
@@ -347,8 +361,8 @@ export const WorldMap: React.FC = () => {
                     height: 'auto',
                     objectFit: 'contain',
                     imageRendering: 'pixelated',
-                    filter: isUnlocked || canUnlockNow 
-                      ? 'drop-shadow(0 6px 8px rgba(0,0,0,0.5))' 
+                    filter: isUnlocked || canUnlockNow
+                      ? 'drop-shadow(0 6px 8px rgba(0,0,0,0.5))'
                       : 'grayscale(60%) opacity(75%) drop-shadow(0 4px 6px rgba(0,0,0,0.5))'
                   }}
                 />
@@ -405,7 +419,7 @@ export const WorldMap: React.FC = () => {
           zIndex: 150,
           padding: '16px'
         }}>
-          <div 
+          <div
             className="rpg-box"
             style={{
               width: '100%',
