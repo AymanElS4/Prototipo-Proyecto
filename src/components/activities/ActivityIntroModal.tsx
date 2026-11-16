@@ -14,15 +14,15 @@ export const ActivityIntroModal: React.FC = () => {
   const isActivity1 = activeActivityModal === 'activity_1_intro';
 
   const vocabWords = isActivity1 ? [
-    { en: 'Backpack', es: 'Mochila / Maleta de viaje', icon: '🎒' },
-    { en: 'Blue', es: 'Color Azul', icon: '🔵' },
-    { en: 'Circle', es: 'Círculo (figura redonda)', icon: '⭕' },
-    { en: 'Lost', es: 'Extraviado / Perdido', icon: '❓' }
+    { en: 'Backpack', es: 'Backpack', icon: '🎒' },
+    { en: 'Blue', es: 'Blue', icon: '🔵' },
+    { en: 'Cross', es: 'Cross (+)', icon: '➕' },
+    { en: 'Luggage', es: 'Luggage', icon: '🛄' }
   ] : [
-    { en: 'Backpack', es: 'Mochila', icon: '🎒' },
-    { en: 'Blue', es: 'Azul', icon: '🔵' },
-    { en: 'Circle', es: 'Círculo', icon: '⭕' },
-    { en: 'Cloudy', es: 'Nublado (clima)', icon: '☁️' }
+    { en: 'Backpack', es: 'Backpack', icon: '🎒' },
+    { en: 'Blue', es: 'Blue', icon: '🔵' },
+    { en: 'Cross', es: 'Cross', icon: '➕' },
+    { en: 'Cloudy', es: 'Cloudy', icon: '☁️' }
   ];
 
   const handleStart = () => {
@@ -59,7 +59,6 @@ export const ActivityIntroModal: React.FC = () => {
           textAlign: 'center'
         }}
       >
-        {/* Header Icon */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <div style={{
             width: '58px',
@@ -81,65 +80,53 @@ export const ActivityIntroModal: React.FC = () => {
             fontSize: '11px',
             fontWeight: 800,
             color: '#b45309',
+            textTransform: 'uppercase',
             backgroundColor: '#fde68a',
-            padding: '4px 12px',
-            borderRadius: '12px',
-            textTransform: 'uppercase'
+            padding: '2px 8px',
+            borderRadius: '6px'
           }}>
-            {isActivity1 ? 'Actividad 1: Búsqueda y Comprensión' : 'Actividad 2: Reconocimiento Léxico'}
+            {isActivity1 ? 'Activity 1 • Vocabulary' : 'Activity 2 • Vocabulary'}
           </span>
-          <h2 style={{ fontSize: '19px', fontWeight: 800, color: '#78350f', marginTop: '6px' }}>
-            Aprenderás Vocabulario
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#78350f', marginTop: '4px' }}>
+            {isActivity1 ? 'Airport Luggage Keywords' : 'Word Search Vocabulary'}
           </h2>
-          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '3px' }}>
+          <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
             {isActivity1 
-              ? 'Términos para describir y localizar pertenencias perdidas:' 
-              : 'Identifica las siguientes palabras en la libreta del viajero:'}
+              ? 'Listen to the key words and pay attention to colors and emblems.'
+              : 'Find these terms in the airport word search grid.'}
           </p>
         </div>
 
-        {/* Word Cards with Audio Listen Button */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          textAlign: 'left'
-        }}>
-          {vocabWords.map(item => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {vocabWords.map((item, idx) => (
             <div
-              key={item.en}
+              key={idx}
               style={{
+                backgroundColor: '#ffffff',
+                border: '2px solid #fef3c7',
+                borderRadius: '8px',
+                padding: '8px 12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '10px 12px',
-                backgroundColor: '#ffffff',
-                border: '2px solid #fde68a',
-                borderRadius: '10px',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '24px' }}>{item.icon}</span>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>
-                    {item.en}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    {item.es}
-                  </div>
-                </div>
+                <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>
+                  {item.en}
+                </span>
               </div>
 
               <button
-                onClick={() => speakEnglish(item.en)}
-                title="Escuchar pronunciación"
+                onClick={() => speakEnglish(item.en.toLowerCase())}
                 style={{
-                  background: '#3b82f6',
-                  border: 'none',
+                  background: '#fef3c7',
+                  border: '1px solid #f59e0b',
                   borderRadius: '6px',
-                  padding: '6px 10px',
-                  color: 'white',
+                  padding: '4px 8px',
+                  color: '#b45309',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -148,36 +135,19 @@ export const ActivityIntroModal: React.FC = () => {
                   fontWeight: 700
                 }}
               >
-                <Volume2 size={15} />
+                <Volume2 size={14} />
                 <span>Audio</span>
               </button>
             </div>
           ))}
         </div>
 
-        {/* Instructions */}
-        <div style={{
-          backgroundColor: '#f1f5f9',
-          padding: '10px 12px',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: '#334155',
-          lineHeight: '1.45',
-          textAlign: 'left'
-        }}>
-          💡 <strong>Cómo realizar la actividad:</strong> {isActivity1
-            ? 'Tras esta pantalla, el turista te describirá su maleta exacta. Luego camina por el pueblo y pulsa sobre la maleta que tenga el color y la forma correcta.'
-            : 'Encuentra las 4 palabras en la cuadrícula de letras. Si tocas una palabra correcta, aparecerá un visto verde en su ilustración.'}
-        </div>
-
-        {/* Action Button */}
         <button
           onClick={handleStart}
           className="rpg-btn rpg-btn-green"
-          style={{ width: '100%', padding: '12px', fontSize: '14px' }}
+          style={{ width: '100%', fontSize: '14px', padding: '12px', marginTop: '6px' }}
         >
-          <Sparkles size={18} />
-          <span>{isActivity1 ? '¡Entendido, escuchar a John!' : '¡Comenzar Sopa de Letras!'}</span>
+          <span>CONTINUE</span>
           <ArrowRight size={18} />
         </button>
       </div>

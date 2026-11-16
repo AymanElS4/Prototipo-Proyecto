@@ -11,22 +11,9 @@ interface SuitcaseSpriteProps {
 }
 
 export const SuitcaseSprite: React.FC<SuitcaseSpriteProps> = ({ suitcase }) => {
-  const { hasFoundBackpack, setHasFoundBackpack, advanceQuestStep, openDialogue } = useQuest();
+  const { setHasFoundBackpack, advanceQuestStep, openDialogue } = useQuest();
   const { showFeedback, addHistoryRecord } = useGame();
   const { addItem, unlockBadge, addXp } = usePlayer();
-
-  if (hasFoundBackpack && suitcase.isCorrect) {
-    return null;
-  }
-
-  const renderShapeIcon = (shape: SuitcaseItem['shape']) => {
-    switch (shape) {
-      case 'circle': return '⚪';
-      case 'square': return '⬜';
-      case 'triangle': return '🔺';
-      case 'star': return '⭐';
-    }
-  };
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,8 +22,8 @@ export const SuitcaseSprite: React.FC<SuitcaseSpriteProps> = ({ suitcase }) => {
       try {
         sfx.playSuccess();
         confetti({
-          particleCount: 75,
-          spread: 65,
+          particleCount: 85,
+          spread: 70,
           origin: { y: 0.6 }
         });
       } catch {}
@@ -47,35 +34,35 @@ export const SuitcaseSprite: React.FC<SuitcaseSpriteProps> = ({ suitcase }) => {
 
       addItem({
         id: 'johns_blue_backpack',
-        name: 'Mochila Azul de John',
-        description: 'La maleta perdida con un círculo azul en el frente. Pertenece a Mr. John.',
+        name: 'John\'s Blue Backpack',
+        description: 'Blue backpack with a cross emblem in the center.',
         icon: '🎒',
         category: 'quest'
       });
 
       unlockBadge({
         id: 'eagle_eye',
-        title: 'Ojo de Halcón',
-        description: 'Encontraste la maleta exacta solicitada en inglés ("blue backpack with a circle").',
+        title: 'Eagle Eye',
+        description: 'You found the exact item: "blue backpack with a cross".',
         icon: '🦅'
       });
 
       addHistoryRecord({
         activityType: 'suitcase_search',
-        title: 'Búsqueda de Equipaje Perdido',
+        title: 'Luggage Search: Airport',
         score: 100,
         maxScore: 100,
         mistakesCount: 0,
         completed: true,
-        notes: 'Identificación correcta de: "Blue backpack with a circle".'
+        notes: 'Identified: "Blue backpack with a cross".'
       });
 
       showFeedback({
-        title: '¡Maleta Correcta Encontrada!',
-        message: suitcase.feedbackEs,
-        englishPhrase: 'Blue backpack with a circle',
+        title: '¡BIEN HECHO! / Well done',
+        message: 'You found the correct backpack! Talk to Mr. John to return it.',
+        englishPhrase: 'Blue backpack with a cross',
         isSuccess: true,
-        tip: 'Ahora ve a la plaza y habla con Mr. John para entregársela y continuar con la aventura.',
+        tip: 'Now approach Mr. John and press TALK to return it and continue.',
         onContinue: () => {
           openDialogue('john', 'bag_found');
         }
@@ -83,11 +70,11 @@ export const SuitcaseSprite: React.FC<SuitcaseSpriteProps> = ({ suitcase }) => {
     } else {
       try { sfx.playError(); } catch {}
       showFeedback({
-        title: '¡Maleta Equivocada!',
-        message: suitcase.feedbackEs,
+        title: '¡Inténtalo de nuevo! / Try Again!',
+        message: `This is a ${suitcase.colorEn} backpack with a ${suitcase.shapeEn}. Mr. John needs a blue backpack with a cross.`,
         englishPhrase: `${suitcase.colorEn} backpack with a ${suitcase.shapeEn}`,
         isSuccess: false,
-        tip: 'Mr. John necesita: "blue backpack with a circle". Verifica tanto el color (blue) como la figura (circle).'
+        tip: 'Remember: look for the "blue backpack with a cross" on the carousel.'
       });
     }
   };
@@ -96,54 +83,62 @@ export const SuitcaseSprite: React.FC<SuitcaseSpriteProps> = ({ suitcase }) => {
     <div
       onClick={handleClick}
       className="animate-float"
-      title={`Examinar equipaje: ${suitcase.colorEn} with ${suitcase.shapeEn}`}
+      title={`Check luggage: ${suitcase.colorEn} with ${suitcase.shapeEn}`}
       style={{
         position: 'absolute',
         left: `${suitcase.x}px`,
         top: `${suitcase.y}px`,
-        width: '40px',
-        height: '40px',
-        borderRadius: '10px',
-        backgroundColor: suitcase.color,
-        border: '3px solid #ffffff',
-        boxShadow: '0 6px 12px rgba(0,0,0,0.35)',
+        transform: 'translate(-50%, -50%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
         cursor: 'pointer',
-        zIndex: 15
+        zIndex: 25,
+        userSelect: 'none'
       }}
     >
-      {/* Top Handle of luggage */}
+      {/* RPG Pixel Art Backpack Sprite */}
       <div style={{
-        position: 'absolute',
-        top: '-6px',
-        width: '16px',
-        height: '6px',
-        border: '2px solid #ffffff',
-        borderBottom: 'none',
-        borderRadius: '4px 4px 0 0'
-      }} />
-
-      {/* Center Shape */}
-      <span style={{ fontSize: '18px', lineHeight: 1 }}>
-        {renderShapeIcon(suitcase.shape)}
-      </span>
-
-      {/* Touch indicator badge */}
-      <span style={{
-        position: 'absolute',
-        bottom: '-14px',
-        backgroundColor: 'rgba(0,0,0,0.85)',
-        color: '#ffffff',
-        fontSize: '9px',
-        fontWeight: 800,
-        padding: '1px 5px',
-        borderRadius: '4px',
-        whiteSpace: 'nowrap'
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'transform 0.15s ease'
       }}>
-        Tocar
+        <img
+          src={suitcase.spriteImg}
+          alt={`Backpack ${suitcase.colorEn} with ${suitcase.shapeEn}`}
+          style={{
+            width: '44px',
+            height: '44px',
+            imageRendering: 'pixelated',
+            filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.5))'
+          }}
+        />
+
+        <div style={{
+          position: 'absolute',
+          inset: '-4px',
+          borderRadius: '50%',
+          border: '1.5px dashed rgba(255, 255, 255, 0.6)',
+          pointerEvents: 'none'
+        }} />
+      </div>
+
+      {/* Pill: Touch Backpack */}
+      <span style={{
+        marginTop: '2px',
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        color: '#f8fafc',
+        fontSize: '9.5px',
+        fontWeight: 900,
+        padding: '2px 7px',
+        borderRadius: '6px',
+        whiteSpace: 'nowrap',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.4)'
+      }}>
+        🎒 Touch
       </span>
     </div>
   );

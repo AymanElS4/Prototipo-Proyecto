@@ -1,17 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { useQuest } from '../../context/QuestContext';
-import { Wifi, WifiOff, Pause, BookOpen, Compass } from 'lucide-react';
+import { Wifi, WifiOff, Pause, BookOpen, Compass, Layers, CheckCircle2, ChevronDown, Volume2, VolumeX, ArrowLeft, RotateCcw } from 'lucide-react';
+import { sfx } from '../../utils/audioSynthesis';
 
 export const GameHUD: React.FC = () => {
-  const { settings, toggleOnlineMode, setIsPauseOpen, setIsHistoryOpen, screen } = useGame();
+  const { settings, toggleOnlineMode, updateSettings, setIsPauseOpen, setIsHistoryOpen, screen, setScreen } = useGame();
   const { player } = usePlayer();
-  const { quest } = useQuest();
+  const { quest, setActiveActivityModal, setSuitcasesVisible, restartLevelOne } = useQuest();
+  const [isActivitiesMenuOpen, setIsActivitiesMenuOpen] = useState(false);
 
-  if (screen === 'main_menu') return null;
+  // In the Main Menu or Level Select World Map, hide the top status HUD completely
+  if (screen === 'main_menu' || screen === 'world_map') return null;
 
   const currentStep = quest?.steps && quest.steps[quest.currentStepIndex];
+
+  const handleSelectActivity = (actIndex: number) => {
+    try { sfx.playPop(); } catch {}
+    setIsActivitiesMenuOpen(false);
+
+    switch (actIndex) {
+      case 1:
+        setSuitcasesVisible(true);
+        setActiveActivityModal('activity_1_intro');
+        break;
+      case 2:
+        setActiveActivityModal('activity_2_intro');
+        break;
+      case 3:
+        setActiveActivityModal('sentence_matching');
+        break;
+      case 4:
+        setActiveActivityModal('listening_speaking' as any);
+        break;
+    }
+  };
 
   return (
     <div style={{
@@ -19,57 +43,58 @@ export const GameHUD: React.FC = () => {
       top: 0,
       left: 0,
       right: 0,
-      padding: '12px 14px',
+      padding: '8px 10px',
       zIndex: 40,
       display: 'flex',
       flexDirection: 'column',
-      gap: '8px',
+      gap: '6px',
       pointerEvents: 'none'
     }}>
-      {/* Top Bar Stats */}
+      {/* Top Bar Stats (Línea 1: Nivel, Monedas y Controles) */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        gap: '4px'
       }}>
         {/* Player Level & XP */}
         <div 
           className="rpg-box"
           style={{
-            padding: '6px 10px',
+            padding: '3px 6px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            gap: '6px',
             backgroundColor: '#fffbeb',
             borderWidth: '2px'
           }}
         >
           <div style={{
-            fontSize: '13px',
-            fontWeight: 800,
+            fontSize: '11px',
+            fontWeight: 900,
             color: '#78350f'
           }}>
             LV.{player.level}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
             <div style={{
-              width: '75px',
-              height: '8px',
+              width: '52px',
+              height: '5px',
               backgroundColor: '#cbd5e1',
-              borderRadius: '4px',
+              borderRadius: '3px',
               overflow: 'hidden'
             }}>
               <div style={{
                 width: `${Math.min(100, (player.xp % 300) / 3)}%`,
                 height: '100%',
                 backgroundColor: '#10b981',
-                borderRadius: '4px',
+                borderRadius: '3px',
                 transition: 'width 0.3s ease'
               }} />
             </div>
-            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 700 }}>
+            <div style={{ fontSize: '8.5px', color: '#64748b', fontWeight: 800 }}>
               {player.xp % 300}/300 XP
             </div>
           </div>
@@ -79,48 +104,48 @@ export const GameHUD: React.FC = () => {
         <div 
           className="rpg-box"
           style={{
-            padding: '6px 10px',
+            padding: '3px 6px',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             borderWidth: '2px',
             backgroundColor: '#fffbeb'
           }}
         >
-          <span style={{ fontSize: '16px' }}>🪙</span>
-          <span style={{ fontSize: '13px', fontWeight: 800, color: '#92400e' }}>
+          <span style={{ fontSize: '13px' }}>🪙</span>
+          <span style={{ fontSize: '11px', fontWeight: 900, color: '#92400e' }}>
             {player.coins} Intis
           </span>
         </div>
 
-        {/* Buttons: Online Toggle, Bitácora, Pause */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Controls Row: Online, Bitacora, Sonido, Actividades, Pausa */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {/* Simulated Online/Offline Toggle */}
           <button
             onClick={toggleOnlineMode}
             title={settings.isOnlineMode ? 'Modo Online (Conectado)' : 'Modo Offline (Guardado local)'}
             style={{
-              padding: '6px 9px',
-              borderRadius: '8px',
+              padding: '4px 6px',
+              borderRadius: '6px',
               border: '2px solid #78350f',
               backgroundColor: settings.isOnlineMode ? '#dcfce7' : '#fed7aa',
               color: settings.isOnlineMode ? '#15803d' : '#9a3412',
-              fontSize: '11px',
-              fontWeight: 800,
+              fontSize: '9px',
+              fontWeight: 900,
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '2px',
               cursor: 'pointer'
             }}
           >
             {settings.isOnlineMode ? (
               <>
-                <Wifi size={13} />
+                <Wifi size={11} />
                 <span>ONLINE</span>
               </>
             ) : (
               <>
-                <WifiOff size={13} />
+                <WifiOff size={11} />
                 <span>OFFLINE</span>
               </>
             )}
@@ -131,9 +156,9 @@ export const GameHUD: React.FC = () => {
             onClick={() => setIsHistoryOpen(true)}
             title="Bitácora y Logros"
             style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
               border: '2px solid #78350f',
               backgroundColor: '#fef3c7',
               color: '#92400e',
@@ -143,17 +168,200 @@ export const GameHUD: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            <BookOpen size={16} />
+            <BookOpen size={14} />
           </button>
+
+          {/* Toggle Sonido rápido */}
+          <button
+            onClick={() => {
+              const nextVal = !settings.soundEnabled;
+              sfx.setEnabled(nextVal);
+              sfx.playPop();
+              updateSettings({ soundEnabled: nextVal });
+            }}
+            title={settings.soundEnabled ? 'Sonido Activado' : 'Sonido Silenciado'}
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
+              border: '2px solid #78350f',
+              backgroundColor: settings.soundEnabled ? '#dcfce7' : '#fee2e2',
+              color: settings.soundEnabled ? '#15803d' : '#b91c1c',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            {settings.soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+          </button>
+
+          {/* Menú de Actividades (SOLO VISIBLE DENTRO DEL NIVEL) */}
+          {screen === 'town_map' && (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  try { sfx.playPop(); } catch {}
+                  setIsActivitiesMenuOpen(prev => !prev);
+                }}
+                title="Menú de Actividades del Nivel"
+                style={{
+                  padding: '4px 7px',
+                  borderRadius: '6px',
+                  border: '2px solid #78350f',
+                  backgroundColor: '#fef3c7',
+                  color: '#92400e',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  fontSize: '10px',
+                  fontWeight: 900,
+                  cursor: 'pointer'
+                }}
+              >
+                <Layers size={12} />
+                <span>ACT.</span>
+                <ChevronDown size={10} />
+              </button>
+
+              {/* Dropdown del Menú de Actividades */}
+              {isActivitiesMenuOpen && (
+                <div 
+                  className="rpg-box animate-float"
+                  style={{
+                    position: 'absolute',
+                    top: '32px',
+                    right: 0,
+                    width: '230px',
+                    backgroundColor: '#ffffff',
+                    border: '3px solid #78350f',
+                    padding: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    zIndex: 100,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+                  }}
+                >
+                  <div style={{ fontSize: '10px', fontWeight: 900, color: '#b45309', padding: '2px 4px', textTransform: 'uppercase' }}>
+                    Nivel 1: Aeropuerto • Actividades
+                  </div>
+
+                  <button
+                    onClick={() => handleSelectActivity(1)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '7px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: quest.currentStepIndex >= 0 ? '#eff6ff' : '#ffffff',
+                      color: '#1e293b',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span>🎒</span>
+                    <div style={{ flex: 1 }}>
+                      <div>Actividad 1: Mochila</div>
+                      <div style={{ fontSize: '9px', color: '#64748b' }}>Aeropuerto - Interior</div>
+                    </div>
+                    {quest.currentStepIndex > 1 && <CheckCircle2 size={14} color="#16a34a" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleSelectActivity(2)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '7px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: quest.currentStepIndex >= 2 ? '#eff6ff' : '#ffffff',
+                      color: '#1e293b',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span>🔤</span>
+                    <div style={{ flex: 1 }}>
+                      <div>Actividad 2: Sopa de Letras</div>
+                      <div style={{ fontSize: '9px', color: '#64748b' }}>Aeropuerto - Exterior Atenuado</div>
+                    </div>
+                    {quest.currentStepIndex > 2 && <CheckCircle2 size={14} color="#16a34a" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleSelectActivity(3)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '7px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: quest.currentStepIndex >= 3 ? '#eff6ff' : '#ffffff',
+                      color: '#1e293b',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span>🔗</span>
+                    <div style={{ flex: 1 }}>
+                      <div>Actividad 3: Unir con Líneas</div>
+                      <div style={{ fontSize: '9px', color: '#64748b' }}>3 Columnas: Familia & Trabajo</div>
+                    </div>
+                    {quest.currentStepIndex > 3 && <CheckCircle2 size={14} color="#16a34a" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleSelectActivity(4)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '7px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: quest.currentStepIndex >= 4 ? '#eff6ff' : '#ffffff',
+                      color: '#1e293b',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span>🎙️</span>
+                    <div style={{ flex: 1 }}>
+                      <div>Actividad 4: Speaking</div>
+                      <div style={{ fontSize: '9px', color: '#64748b' }}>Expresión Oral & Micrófono</div>
+                    </div>
+                    {quest.isComplete && <CheckCircle2 size={14} color="#16a34a" />}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Pause Menu */}
           <button
-            onClick={() => setIsPauseOpen(true)}
+            onClick={() => {
+              try { sfx.playPop(); } catch {}
+              setIsPauseOpen(true);
+            }}
             title="Pausa y Ajustes"
             style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
               border: '2px solid #78350f',
               backgroundColor: '#fef3c7',
               color: '#92400e',
@@ -163,55 +371,103 @@ export const GameHUD: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            <Pause size={16} />
+            <Pause size={14} />
           </button>
         </div>
       </div>
 
-      {/* Quest Objective Tracker Pill */}
-      {currentStep && screen === 'town_map' && (
-        <div
-          className="rpg-box"
-          style={{
-            pointerEvents: 'auto',
-            padding: '8px 12px',
-            backgroundColor: '#ffffff',
-            borderWidth: '2px',
-            borderColor: '#f59e0b',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            boxShadow: '0 3px 6px rgba(0,0,0,0.15)'
-          }}
-        >
-          <div style={{
-            width: '26px',
-            height: '26px',
-            borderRadius: '50%',
-            backgroundColor: '#fef3c7',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#b45309',
-            flexShrink: 0
-          }}>
-            <Compass size={16} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: '#b45309', textTransform: 'uppercase' }}>
-              Misión: {quest.title}
+      {/* Línea 2: Botones de Salida/Reinicio e Indicador de Misión (Perfectamente alineados en fila sin solaparse) */}
+      {screen === 'town_map' && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          width: '100%',
+          pointerEvents: 'auto'
+        }}>
+          {/* Botón Mapa */}
+          <button
+            onClick={() => setScreen('world_map')}
+            style={{
+              backgroundColor: 'rgba(15, 23, 42, 0.92)',
+              border: '1.5px solid #38bdf8',
+              borderRadius: '6px',
+              padding: '4px 8px',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              flexShrink: 0
+            }}
+          >
+            <ArrowLeft size={12} />
+            <span>Mapa</span>
+          </button>
+
+          {/* Quest Objective Tracker Pill */}
+          {currentStep && (
+            <div
+              className="rpg-box"
+              style={{
+                flex: 1,
+                minWidth: 0,
+                padding: '4px 8px',
+                backgroundColor: '#ffffff',
+                borderWidth: '1.5px',
+                borderColor: '#f59e0b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+              }}
+            >
+              <Compass size={13} color="#b45309" style={{ flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: '10.5px',
+                  fontWeight: 800,
+                  color: '#1e293b',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {currentStep.instruction}
+                </div>
+              </div>
             </div>
-            <div style={{
-              fontSize: '13px',
-              fontWeight: 700,
-              color: '#1e293b',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}>
-              {currentStep.instruction}
-            </div>
-          </div>
+          )}
+
+          {/* Botón Reiniciar Nivel */}
+          <button
+            onClick={() => {
+              if (window.confirm('¿Deseas reiniciar el Nivel 1 para jugarlo desde el inicio?')) {
+                restartLevelOne();
+              }
+            }}
+            title="Reiniciar Nivel 1"
+            style={{
+              backgroundColor: 'rgba(15, 23, 42, 0.92)',
+              border: '1.5px solid #f59e0b',
+              borderRadius: '6px',
+              padding: '4px 8px',
+              color: '#fef3c7',
+              fontSize: '10px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              flexShrink: 0
+            }}
+          >
+            <RotateCcw size={11} />
+            <span>Reiniciar</span>
+          </button>
         </div>
       )}
     </div>

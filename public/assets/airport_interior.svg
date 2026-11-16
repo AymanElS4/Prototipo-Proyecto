@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="420" viewBox="0 0 600 420">
+  <defs>
+    <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="60%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <linearGradient id="glassGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#93c5fd" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Wall -->
+  <rect width="600" height="230" fill="url(#wallGrad)" />
+  
+  <!-- Tarmac View Windows -->
+  <rect x="40" y="25" width="160" height="110" rx="6" fill="url(#glassGrad)" stroke="#64748b" stroke-width="4"/>
+  <line x1="120" y1="25" x2="120" y2="135" stroke="#475569" stroke-width="3"/>
+  <line x1="40" y1="80" x2="200" y2="80" stroke="#475569" stroke-width="3"/>
+  
+  <!-- Distant Airplane outside window -->
+  <path d="M 75 88 L 135 83 L 160 73 L 165 83 L 140 90 L 125 94 L 80 92 Z" fill="#ffffff" opacity="0.95"/>
+  <polygon points="115,84 105,68 120,84" fill="#0284c7"/>
+  
+  <!-- Arrivals / Departures Display Board -->
+  <rect x="220" y="25" width="180" height="95" rx="6" fill="#0f172a" stroke="#f59e0b" stroke-width="3"/>
+  <rect x="226" y="31" width="168" height="22" fill="#1e293b"/>
+  <text x="310" y="47" fill="#fbbf24" font-size="12" font-family="monospace" font-weight="bold" text-anchor="middle">✈ FLIGHT ARRIVALS</text>
+  <text x="235" y="72" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold">CUZ 402 • ON TIME</text>
+  <text x="235" y="90" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold">LIM 118 • ARRIVED</text>
+  <text x="235" y="108" fill="#eab308" font-size="10" font-family="monospace" font-weight="bold">AQP 074 • DELAYED</text>
+  
+  <!-- Right Window -->
+  <rect x="420" y="25" width="140" height="110" rx="6" fill="url(#glassGrad)" stroke="#64748b" stroke-width="4"/>
+  <line x1="490" y1="25" x2="490" y2="135" stroke="#475569" stroke-width="3"/>
+  <line x1="420" y1="80" x2="560" y2="80" stroke="#475569" stroke-width="3"/>
+
+  <!-- Signpost: BAGGAGE CLAIM -->
+  <rect x="230" y="135" width="160" height="34" rx="4" fill="#f59e0b" stroke="#b45309" stroke-width="2"/>
+  <text x="310" y="157" fill="#1e293b" font-size="13" font-family="sans-serif" font-weight="900" text-anchor="middle">🛄 BAGGAGE CLAIM</text>
+
+  <!-- Floor -->
+  <rect y="230" width="600" height="190" fill="url(#floorGrad)" />
+  
+  <!-- Floor tiles grid perspective -->
+  <line x1="0" y1="230" x2="600" y2="230" stroke="#64748b" stroke-width="3"/>
+  <line x1="0" y1="280" x2="600" y2="280" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="0" y1="340" x2="600" y2="340" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="80" y1="230" x2="40" y2="420" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="220" y1="230" x2="200" y2="420" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="380" y1="230" x2="400" y2="420" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="520" y1="230" x2="560" y2="420" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- Conveyor Carousel (Luggage Belt) -->
+  <ellipse cx="300" cy="325" rx="225" ry="58" fill="#334155" stroke="#0f172a" stroke-width="6"/>
+  <ellipse cx="300" cy="325" rx="160" ry="34" fill="#64748b" stroke="#475569" stroke-width="3"/>
+  <!-- Warning stripes on carousel rim -->
+  <ellipse cx="300" cy="325" rx="225" ry="58" fill="none" stroke="#eab308" stroke-width="4" stroke-dasharray="16 16"/>
+</svg>

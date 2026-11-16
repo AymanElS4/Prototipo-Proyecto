@@ -20,6 +20,7 @@ export interface NPCData {
   name: string;
   role: string;
   avatarIcon: string;
+  spriteImage?: string;
   x: number;
   y: number;
   color: string;

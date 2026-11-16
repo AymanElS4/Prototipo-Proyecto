@@ -1,16 +1,31 @@
-import { SuitcaseItem } from '../types/activities';
+export interface SuitcaseItem {
+  id: string;
+  color: string;
+  shape: 'cross' | 'square' | 'triangle' | 'star';
+  colorEn: string;
+  shapeEn: string;
+  x: number;
+  y: number;
+  isCorrect: boolean;
+  feedbackEs: string;
+  spriteImg: string;
+  spriteLargeImg: string;
+}
 
+// 4 backpacks with dedicated authentic RPG pixel art sprites
 export const SUITCASES_DATA: SuitcaseItem[] = [
   {
-    id: 'suitcase-blue-circle',
+    id: 'suitcase-blue-cross',
     color: '#2563eb', // Blue
-    shape: 'circle',
+    shape: 'cross',
     colorEn: 'blue',
-    shapeEn: 'circle',
-    x: 210,
-    y: 200, // Near the central fountain
+    shapeEn: 'cross',
+    x: 290,
+    y: 320, // Centered right on the airport baggage carousel
     isCorrect: true,
-    feedbackEs: '¡Excelente! Esta es la maleta azul con un círculo en el centro ("blue backpack with a circle"). ¡Has encontrado la pertenencia de John!'
+    feedbackEs: '¡Correct! This is the blue backpack with a white cross.',
+    spriteImg: '/assets/backpacks/backpack_blue_cross.png',
+    spriteLargeImg: '/assets/backpacks/backpack_blue_cross_128.png'
   },
   {
     id: 'suitcase-red-square',
@@ -18,10 +33,12 @@ export const SUITCASES_DATA: SuitcaseItem[] = [
     shape: 'square',
     colorEn: 'red',
     shapeEn: 'square',
-    x: 55,
-    y: 300, // Near the artisan stall
+    x: 130,
+    y: 310, // Left side of conveyor belt
     isCorrect: false,
-    feedbackEs: '¡Atención! Esta es una maleta roja con un cuadrado ("red backpack with a square"). Recuerda que John te pidió: "blue backpack with a circle".'
+    feedbackEs: 'This is a red backpack with a square. Remember: "blue backpack with a cross".',
+    spriteImg: '/assets/backpacks/backpack_red_square.png',
+    spriteLargeImg: '/assets/backpacks/backpack_red_square_128.png'
   },
   {
     id: 'suitcase-green-triangle',
@@ -29,10 +46,12 @@ export const SUITCASES_DATA: SuitcaseItem[] = [
     shape: 'triangle',
     colorEn: 'green',
     shapeEn: 'triangle',
-    x: 330,
-    y: 280, // Near the east trees
+    x: 430,
+    y: 310, // Right side of conveyor belt
     isCorrect: false,
-    feedbackEs: '¡Casi! Esta es una mochila verde con un triángulo ("green backpack with a triangle"). Fíjate en los colores: "green" no es "blue".'
+    feedbackEs: 'This is a green backpack with a triangle. "Green" is not "blue".',
+    spriteImg: '/assets/backpacks/backpack_green_triangle.png',
+    spriteLargeImg: '/assets/backpacks/backpack_green_triangle_128.png'
   },
   {
     id: 'suitcase-yellow-star',
@@ -40,9 +59,11 @@ export const SUITCASES_DATA: SuitcaseItem[] = [
     shape: 'star',
     colorEn: 'yellow',
     shapeEn: 'star',
-    x: 130,
-    y: 430, // Near the south benches
+    x: 230,
+    y: 365, // Bottom rim of conveyor belt
     isCorrect: false,
-    feedbackEs: '¡No es esta! Esta es una maleta amarilla con una estrella ("yellow backpack with a star"). Busca una que sea "blue" y tenga "circle".'
+    feedbackEs: 'This is a yellow backpack with a star. Look for a blue backpack with a cross.',
+    spriteImg: '/assets/backpacks/backpack_yellow_star.png',
+    spriteLargeImg: '/assets/backpacks/backpack_yellow_star_128.png'
   }
 ];

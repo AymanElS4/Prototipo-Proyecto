@@ -4,6 +4,9 @@ import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { BookOpen, Check, X, ArrowRight, Volume2, Sparkles, CheckCircle2, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { AIRPORT_ASSETS } from '../../utils/airportAssets';
+import { speakEnglish } from '../../utils/speechSynth';
+import { sfx } from '../../utils/audioSynthesis';
 
 interface TripletTarget {
   id: string;
@@ -52,14 +55,14 @@ const COL_FAMILY = [
   { id: 'cousin', text: 'my cousin', icon: '👦🏽' }
 ];
 
-// Column 2: Professions (shuffled as requested)
+// Column 2: Distinctive Professions / Uniforms
 const COL_PROFESSIONS = [
-  { id: 'chef', text: 'chef', icon: '👨‍🍳' },
-  { id: 'receptionist', text: 'receptionist', icon: '💁‍♀️' },
-  { id: 'police', text: 'police officer', icon: '👮‍♂️' }
+  { id: 'chef', text: 'chef (gorro)', icon: '👨‍🍳' },
+  { id: 'receptionist', text: 'receptionist (uniforme)', icon: '💁‍♀️' },
+  { id: 'police', text: 'police officer (placa)', icon: '👮‍♂️' }
 ];
 
-// Column 3: Places (shuffled as requested)
+// Column 3: Workplaces
 const COL_PLACES = [
   { id: 'police_station', text: 'police station', icon: '🚓' },
   { id: 'restaurant', text: 'restaurant', icon: '🍽️' },
@@ -71,29 +74,13 @@ export const SentenceMatchingModal: React.FC = () => {
   const { showFeedback, addHistoryRecord } = useGame();
   const { addXp, addCoins, unlockBadge } = usePlayer();
 
-  // Screen 1: Intro ("Vocabulario y Grammar") | Screen 2: Activity
-  const [showIntroScreen, setShowIntroScreen] = useState(true);
-
-  // Completed matched triplet IDs
+  const [showIntroScreen, setShowIntroScreen] = useState(false);
   const [completedTripletIds, setCompletedTripletIds] = useState<string[]>([]);
-
-  // Current selections
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
   const [selectedProfession, setSelectedProfession] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
 
-  // Simulated audio playing
-  const [activeAudioIndex, setActiveAudioIndex] = useState<number | null>(null);
-
   if (activeActivityModal !== 'sentence_matching') return null;
-
-  // Simulate audio playback without freezing browser
-  const handleSimulateAudio = (index: number) => {
-    setActiveAudioIndex(index);
-    setTimeout(() => {
-      setActiveAudioIndex(null);
-    }, 1200);
-  };
 
   const isFamilyCompleted = (id: string) => {
     return completedTripletIds.some(tId => {
@@ -116,34 +103,34 @@ export const SentenceMatchingModal: React.FC = () => {
     });
   };
 
-  // Click on Column 1 item
   const handleSelectFamily = (id: string) => {
     if (isFamilyCompleted(id)) return;
+    try { sfx.playClick(); } catch {}
     setSelectedFamily(id);
   };
 
-  // Click on Column 2 item
   const handleSelectProfession = (id: string) => {
     if (isProfessionCompleted(id)) return;
+    try { sfx.playClick(); } catch {}
     if (!selectedFamily) {
       showFeedback({
-        title: 'Selecciona en orden',
-        message: 'Primero selecciona un miembro de la familia en la Columna 1 (my uncle, my aunt o my cousin).',
+        title: '¡Inténtalo de nuevo! / Try Again!',
+        message: 'Primero selecciona un miembro de la familia en la Columna Izquierda (my uncle, my aunt o my cousin).',
         isSuccess: false,
-        tip: 'Sigue el orden de la oración: Sujeto ➡️ Profesión ➡️ Lugar.'
+        tip: 'Sigue el orden de asociación: Personaje ➡️ Ocupación/Uniforme ➡️ Lugar de trabajo.'
       });
       return;
     }
     setSelectedProfession(id);
   };
 
-  // Click on Column 3 item -> triggers validation!
   const handleSelectPlace = (id: string) => {
     if (isPlaceCompleted(id)) return;
+    try { sfx.playClick(); } catch {}
     if (!selectedFamily || !selectedProfession) {
       showFeedback({
-        title: 'Selecciona en orden',
-        message: 'Debes seleccionar primero el familiar (Col. 1) y luego su profesión (Col. 2) antes de elegir el lugar.',
+        title: '¡Inténtalo de nuevo! / Try Again!',
+        message: 'Debes seleccionar primero el personaje y su distintivo antes de conectar el lugar de trabajo.',
         isSuccess: false,
         tip: 'Ejemplo: my uncle ➡️ police officer ➡️ police station.'
       });
@@ -151,13 +138,10 @@ export const SentenceMatchingModal: React.FC = () => {
     }
 
     setSelectedPlace(id);
-
-    // Validate triplet
     validateSelection(selectedFamily, selectedProfession, id);
   };
 
   const validateSelection = (fam: string, prof: string, place: string) => {
-    // Check if matches any target triplet
     const matched = TARGET_TRIPLETS.find(t => 
       !completedTripletIds.includes(t.id) &&
       t.familyId === fam && 
@@ -166,31 +150,32 @@ export const SentenceMatchingModal: React.FC = () => {
     );
 
     if (matched) {
-      // CORRECT!
+      try { sfx.playSuccess(); } catch {}
       const updated = [...completedTripletIds, matched.id];
       setCompletedTripletIds(updated);
       setSelectedFamily(null);
       setSelectedProfession(null);
       setSelectedPlace(null);
 
+      speakEnglish(matched.sentenceEn);
+
       if (updated.length === TARGET_TRIPLETS.length) {
-        // All 3 sentences matched!
         setTimeout(() => {
           handleAllTripletsCompleted();
         }, 500);
       }
     } else {
-      // INCORRECT!
+      try { sfx.playError(); } catch {}
       const correctForFam = TARGET_TRIPLETS.find(t => t.familyId === fam);
       setSelectedFamily(null);
       setSelectedProfession(null);
       setSelectedPlace(null);
 
       showFeedback({
-        title: 'Asociación Incorrecta',
-        message: `Los elementos seleccionados no coinciden con las oraciones. Recuerda: "${correctForFam?.sentenceEs}" ("${correctForFam?.sentenceEn}").`,
+        title: '¡Inténtalo de nuevo! / Try Again!',
+        message: `Los elementos conectados no corresponden a la ocupación correcta. Recuerda: "${correctForFam?.sentenceEs}" ("${correctForFam?.sentenceEn}").`,
         isSuccess: false,
-        tip: 'Lee atentamente las 3 oraciones en la parte superior para saber qué profesión y lugar corresponden a cada familiar.'
+        tip: 'Relaciona a cada familiar con su uniforme correspondiente y su lugar de trabajo.'
       });
     }
   };
@@ -209,215 +194,115 @@ export const SentenceMatchingModal: React.FC = () => {
 
     unlockBadge({
       id: 'sentence_connector',
-      title: 'Conector del Pueblo',
-      description: 'Uniste con éxito todas las oraciones de familia, profesiones y lugares.',
+      title: 'Conector de Profesiones',
+      description: 'Conectaste exitosamente personaje -> ocupación -> lugar de trabajo.',
       icon: '🔗'
     });
 
     addHistoryRecord({
       activityType: 'multiple_choice',
-      title: 'Unir con Líneas: Familia y Ocupaciones',
+      title: 'Unir con Líneas: Ocupaciones y Lugares',
       score: 100,
       maxScore: 100,
       mistakesCount: 0,
       completed: true,
-      notes: 'Dominio de oraciones: uncle/police, aunt/receptionist, cousin/chef.'
+      notes: 'Dominio de oraciones: uncle/police/police station, aunt/receptionist/hotel, cousin/chef/restaurant.'
     });
 
-    setActiveActivityModal('none');
     advanceQuestStep();
 
     showFeedback({
-      title: '¡Actividad 3 Completada!',
-      message: '¡Excelente trabajo uniendo las oraciones! Has demostrado dominio de vocabulario y estructura gramatical de profesiones y lugares.',
+      title: '¡BIEN HECHO! / Well done',
+      message: '¡Excelente trabajo! Has asociado correctamente los personajes, sus ocupaciones y sus lugares de trabajo mediante las conexiones.',
       englishPhrase: 'My uncle is a police officer at the police station.',
       isSuccess: true,
-      tip: 'Ahora habla con Mr. John para realizar la Actividad 4: Práctica oral con el micrófono.',
+      tip: 'Ahora pasa a la Actividad 4: Sección de Speaking para practicar tu pronunciación con el micrófono.',
       onContinue: () => {
-        openDialogue('john', 'after_matching_john');
+        setActiveActivityModal('none');
+        openDialogue('john', 'matching_done');
       }
     });
   };
 
-  // SCREEN 1: INTRO SCREEN ("Vocabulario y Grammar")
-  if (showIntroScreen) {
-    return (
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 160,
-        padding: '16px'
-      }}>
-        <div 
-          className="rpg-box animate-float"
-          style={{
-            width: '100%',
-            maxWidth: '380px',
-            padding: '22px 18px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            backgroundColor: '#ffffff',
-            textAlign: 'center'
-          }}
-        >
-          {/* Header Icon */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{
-              width: '58px',
-              height: '58px',
-              borderRadius: '50%',
-              backgroundColor: '#fef3c7',
-              border: '3px solid #f59e0b',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#b45309'
-            }}>
-              <BookOpen size={30} />
-            </div>
-          </div>
-
-          <div>
-            <span style={{
-              fontSize: '11px',
-              fontWeight: 800,
-              color: '#b45309',
-              backgroundColor: '#fde68a',
-              padding: '3px 12px',
-              borderRadius: '12px',
-              textTransform: 'uppercase'
-            }}>
-              Actividad 3: Asociación de Oraciones
-            </span>
-            <h2 style={{ fontSize: '19px', fontWeight: 800, color: '#1e293b', marginTop: '6px' }}>
-              Vocabulario y Grammar
-            </h2>
-            <p style={{ fontSize: '13px', color: '#64748b', marginTop: '3px', lineHeight: '1.4' }}>
-              Aprenderás a estructurar oraciones asociando familiares, profesiones y lugares de trabajo en inglés.
-            </p>
-          </div>
-
-          {/* Key Grammar Rule */}
-          <div style={{
-            backgroundColor: '#eff6ff',
-            border: '2px solid #bfdbfe',
-            borderRadius: '10px',
-            padding: '12px',
-            textAlign: 'left',
-            fontSize: '12px',
-            color: '#1e40af',
-            lineHeight: '1.5'
-          }}>
-            📘 <strong>Regla Gramatical:</strong>
-            <div style={{ marginTop: '4px', color: '#1e3a8a' }}>
-              <strong>Sujeto</strong> + <strong>Verbo To Be (is)</strong> + <strong>Profesión (a/an)</strong> + <strong>Lugar (in/at)</strong>
-            </div>
-            <div style={{ marginTop: '2px', fontSize: '11px', fontStyle: 'italic', color: '#3b82f6' }}>
-              "My uncle is a police officer working at the police station."
-            </div>
-          </div>
-
-          {/* Instructions */}
-          <div style={{
-            backgroundColor: '#f1f5f9',
-            padding: '10px 12px',
-            borderRadius: '8px',
-            fontSize: '12px',
-            color: '#334155',
-            lineHeight: '1.45',
-            textAlign: 'left'
-          }}>
-            💡 <strong>Cómo realizar la actividad:</strong>
-            <ul style={{ paddingLeft: '16px', marginTop: '4px' }}>
-              <li>Leerás o escucharás tres oraciones clave.</li>
-              <li>Abajo verás 9 botones en 3 columnas.</li>
-              <li><strong>Unirás con líneas</strong> seleccionando en orden: un familiar (Col. 1), su profesión (Col. 2) y su lugar de trabajo (Col. 3).</li>
-            </ul>
-          </div>
-
-          {/* Action Button */}
-          <button
-            onClick={() => setShowIntroScreen(false)}
-            className="rpg-btn rpg-btn-green"
-            style={{ width: '100%', padding: '12px', fontSize: '14px' }}
-          >
-            <Sparkles size={18} />
-            <span>¡Comenzar Actividad 3!</span>
-            <ArrowRight size={18} />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // SCREEN 2: THE 3-COLUMN CONNECTING LINES ACTIVITY
   return (
     <div style={{
       position: 'absolute',
       inset: 0,
-      backgroundColor: 'rgba(15, 23, 42, 0.94)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 160,
-      padding: '12px'
+      padding: '14px',
+      overflow: 'hidden'
     }}>
+      {/* Escenario del aeropuerto de fondo */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: `url(${AIRPORT_ASSETS.interiorSvg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'brightness(0.35) blur(2px)',
+        zIndex: 1
+      }} />
+
+      {/* Tablero central de 3 columnas */}
       <div 
-        className="rpg-box"
+        className="rpg-box animate-float"
         style={{
+          position: 'relative',
+          zIndex: 10,
           width: '100%',
-          maxWidth: '420px',
-          maxHeight: '96vh',
-          overflowY: 'auto',
+          maxWidth: '430px',
           padding: '16px 14px',
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
-          backgroundColor: '#ffffff'
+          backgroundColor: 'rgba(255, 255, 255, 0.97)',
+          backdropFilter: 'blur(8px)',
+          border: '4px solid #0284c7',
+          boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+          maxHeight: '94vh',
+          overflowY: 'auto'
         }}
       >
         {/* Top Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <span style={{ fontSize: '10px', fontWeight: 800, color: '#b45309', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '10px', fontWeight: 900, color: '#0369a1', textTransform: 'uppercase', backgroundColor: '#e0f2fe', padding: '2px 8px', borderRadius: '6px' }}>
               Actividad 3 • Unir con Líneas
             </span>
-            <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b' }}>
-              Familia, Profesiones y Lugares
+            <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#0f172a', margin: '3px 0 0' }}>
+              Personajes, Ocupaciones y Lugares
             </h2>
           </div>
           <button
             onClick={() => setActiveActivityModal('none')}
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#78350f',
-              cursor: 'pointer'
+              background: '#f1f5f9',
+              border: '2px solid #cbd5e1',
+              borderRadius: '8px',
+              padding: '4px 8px',
+              color: '#334155',
+              cursor: 'pointer',
+              fontWeight: 800,
+              fontSize: '12px'
             }}
           >
-            <X size={22} />
+            ✕
           </button>
         </div>
 
-        {/* 3 Reference Sentences Area */}
+        {/* Oraciones de referencia */}
         <div style={{
           backgroundColor: '#f8fafc',
           border: '2px solid #e2e8f0',
-          borderRadius: '10px',
+          borderRadius: '8px',
           padding: '8px 10px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '6px'
+          gap: '4px'
         }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>
-            📖 Escucha o lee las 3 oraciones modelo:
-          </div>
-
           {TARGET_TRIPLETS.map((item, idx) => {
             const isCompleted = completedTripletIds.includes(item.id);
 
@@ -428,7 +313,7 @@ export const SentenceMatchingModal: React.FC = () => {
                   backgroundColor: isCompleted ? '#dcfce7' : '#ffffff',
                   border: isCompleted ? '2px solid #16a34a' : '1px solid #cbd5e1',
                   borderRadius: '6px',
-                  padding: '6px 8px',
+                  padding: '5px 8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -437,71 +322,51 @@ export const SentenceMatchingModal: React.FC = () => {
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontSize: '11px',
+                    fontSize: '10.5px',
                     fontWeight: 700,
                     color: isCompleted ? '#15803d' : '#1e293b',
                     textDecoration: isCompleted ? 'line-through' : 'none'
                   }}>
-                    {idx + 1}. "{item.sentenceEs}"
-                  </div>
-                  <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic' }}>
-                    "{item.sentenceEn}"
+                    {idx + 1}. "{item.sentenceEn}"
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {isCompleted && <CheckCircle2 size={16} color="#16a34a" />}
-                  <button
-                    onClick={() => handleSimulateAudio(idx)}
-                    title="Escuchar oración"
-                    style={{
-                      background: activeAudioIndex === idx ? '#10b981' : '#3b82f6',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '4px 6px',
-                      color: 'white',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      fontSize: '10px',
-                      fontWeight: 700
-                    }}
-                  >
-                    <Volume2 size={12} />
-                    <span>{activeAudioIndex === idx ? '...' : 'Audio'}</span>
-                  </button>
-                </div>
+                <button
+                  onClick={() => speakEnglish(item.sentenceEn)}
+                  title="Escuchar audio"
+                  style={{
+                    background: '#0284c7',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '3px 6px',
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    fontSize: '10px',
+                    fontWeight: 700
+                  }}
+                >
+                  <Volume2 size={12} />
+                  <span>Audio</span>
+                </button>
               </div>
             );
           })}
         </div>
 
-        {/* Instruction pill */}
+        {/* 3 Columns Organized Layout */}
         <div style={{
-          backgroundColor: '#eff6ff',
-          padding: '6px 10px',
-          borderRadius: '6px',
-          fontSize: '11px',
-          color: '#1e40af',
-          fontWeight: 600,
-          textAlign: 'center'
-        }}>
-          👇 Toca en orden: <strong>1 Familiar</strong> ➡️ <strong>1 Profesión</strong> ➡️ <strong>1 Lugar</strong>
-        </div>
-
-        {/* 9 Buttons Distributed in 3 Columns with Visual Connecting Simulation */}
-        <div style={{
-          position: 'relative',
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '8px',
-          padding: '4px 0'
+          position: 'relative'
         }}>
-          {/* COLUMN 1: Family */}
+          {/* COL 1: Personajes */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textAlign: 'center' }}>
-              COLUMNA 1: FAMILIA
+            <div style={{ fontSize: '9px', fontWeight: 900, color: '#0369a1', textAlign: 'center', backgroundColor: '#e0f2fe', padding: '3px', borderRadius: '4px' }}>
+              COL. 1: PERSONAJE
             </div>
             {COL_FAMILY.map(fam => {
               const isSelected = selectedFamily === fam.id;
@@ -515,8 +380,8 @@ export const SentenceMatchingModal: React.FC = () => {
                   style={{
                     padding: '8px 4px',
                     borderRadius: '8px',
-                    border: isSelected ? '3px solid #2563eb' : isDone ? '2px solid #16a34a' : '2px solid #b45309',
-                    backgroundColor: isSelected ? '#dbeafe' : isDone ? '#dcfce7' : '#fffbeb',
+                    border: isSelected ? '3px solid #0284c7' : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
+                    backgroundColor: isSelected ? '#e0f2fe' : isDone ? '#dcfce7' : '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -527,19 +392,11 @@ export const SentenceMatchingModal: React.FC = () => {
                   }}
                 >
                   <span style={{ fontSize: '26px' }}>{fam.icon}</span>
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#1e293b' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#1e293b' }}>
                     {fam.text}
                   </span>
                   {isDone && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      right: '2px',
-                      backgroundColor: '#16a34a',
-                      borderRadius: '50%',
-                      padding: '1px',
-                      color: 'white'
-                    }}>
+                    <div style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: '#16a34a', borderRadius: '50%', padding: '1px', color: 'white' }}>
                       <Check size={10} strokeWidth={3} />
                     </div>
                   )}
@@ -548,10 +405,10 @@ export const SentenceMatchingModal: React.FC = () => {
             })}
           </div>
 
-          {/* COLUMN 2: Professions */}
+          {/* COL 2: Ocupaciones / Uniformes */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textAlign: 'center' }}>
-              COLUMNA 2: PROFESIÓN
+            <div style={{ fontSize: '9px', fontWeight: 900, color: '#0369a1', textAlign: 'center', backgroundColor: '#e0f2fe', padding: '3px', borderRadius: '4px' }}>
+              COL. 2: OCUPACIÓN
             </div>
             {COL_PROFESSIONS.map(prof => {
               const isSelected = selectedProfession === prof.id;
@@ -565,8 +422,8 @@ export const SentenceMatchingModal: React.FC = () => {
                   style={{
                     padding: '8px 4px',
                     borderRadius: '8px',
-                    border: isSelected ? '3px solid #2563eb' : isDone ? '2px solid #16a34a' : '2px solid #b45309',
-                    backgroundColor: isSelected ? '#dbeafe' : isDone ? '#dcfce7' : '#fffbeb',
+                    border: isSelected ? '3px solid #0284c7' : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
+                    backgroundColor: isSelected ? '#e0f2fe' : isDone ? '#dcfce7' : '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -581,15 +438,7 @@ export const SentenceMatchingModal: React.FC = () => {
                     {prof.text}
                   </span>
                   {isDone && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      right: '2px',
-                      backgroundColor: '#16a34a',
-                      borderRadius: '50%',
-                      padding: '1px',
-                      color: 'white'
-                    }}>
+                    <div style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: '#16a34a', borderRadius: '50%', padding: '1px', color: 'white' }}>
                       <Check size={10} strokeWidth={3} />
                     </div>
                   )}
@@ -598,10 +447,10 @@ export const SentenceMatchingModal: React.FC = () => {
             })}
           </div>
 
-          {/* COLUMN 3: Places */}
+          {/* COL 3: Lugares de Trabajo */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textAlign: 'center' }}>
-              COLUMNA 3: LUGAR
+            <div style={{ fontSize: '9px', fontWeight: 900, color: '#0369a1', textAlign: 'center', backgroundColor: '#e0f2fe', padding: '3px', borderRadius: '4px' }}>
+              COL. 3: LUGAR
             </div>
             {COL_PLACES.map(place => {
               const isSelected = selectedPlace === place.id;
@@ -615,8 +464,8 @@ export const SentenceMatchingModal: React.FC = () => {
                   style={{
                     padding: '8px 4px',
                     borderRadius: '8px',
-                    border: isSelected ? '3px solid #2563eb' : isDone ? '2px solid #16a34a' : '2px solid #b45309',
-                    backgroundColor: isSelected ? '#dbeafe' : isDone ? '#dcfce7' : '#fffbeb',
+                    border: isSelected ? '3px solid #0284c7' : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
+                    backgroundColor: isSelected ? '#e0f2fe' : isDone ? '#dcfce7' : '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -631,15 +480,7 @@ export const SentenceMatchingModal: React.FC = () => {
                     {place.text}
                   </span>
                   {isDone && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      right: '2px',
-                      backgroundColor: '#16a34a',
-                      borderRadius: '50%',
-                      padding: '1px',
-                      color: 'white'
-                    }}>
+                    <div style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: '#16a34a', borderRadius: '50%', padding: '1px', color: 'white' }}>
                       <Check size={10} strokeWidth={3} />
                     </div>
                   )}
@@ -649,28 +490,28 @@ export const SentenceMatchingModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Current Connection Summary Pill */}
+        {/* Resumen de Conexión actual */}
         <div style={{
           backgroundColor: '#f1f5f9',
           border: '1px solid #cbd5e1',
           borderRadius: '8px',
-          padding: '8px 12px',
+          padding: '6px 10px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           fontSize: '11px'
         }}>
           <div>
-            <strong>Línea actual:</strong>{' '}
-            <span style={{ color: '#2563eb', fontWeight: 700 }}>
+            <strong>Línea:</strong>{' '}
+            <span style={{ color: '#0284c7', fontWeight: 800 }}>
               {selectedFamily ? COL_FAMILY.find(f => f.id === selectedFamily)?.text : '...'}
             </span>
-            {' ➡️ '}
-            <span style={{ color: '#2563eb', fontWeight: 700 }}>
+            {' ➔ '}
+            <span style={{ color: '#0284c7', fontWeight: 800 }}>
               {selectedProfession ? COL_PROFESSIONS.find(p => p.id === selectedProfession)?.text : '...'}
             </span>
-            {' ➡️ '}
-            <span style={{ color: '#2563eb', fontWeight: 700 }}>
+            {' ➔ '}
+            <span style={{ color: '#0284c7', fontWeight: 800 }}>
               {selectedPlace ? COL_PLACES.find(p => p.id === selectedPlace)?.text : '...'}
             </span>
           </div>
@@ -683,31 +524,18 @@ export const SentenceMatchingModal: React.FC = () => {
                 setSelectedPlace(null);
               }}
               style={{
-                background: 'transparent',
+                background: '#e2e8f0',
                 border: 'none',
-                color: '#dc2626',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px',
+                borderRadius: '4px',
+                padding: '3px 6px',
                 fontSize: '10px',
+                cursor: 'pointer',
                 fontWeight: 700
               }}
             >
-              <RotateCcw size={12} />
-              <span>Limpiar</span>
+              Reiniciar
             </button>
           )}
-        </div>
-
-        {/* Footer Progress */}
-        <div style={{
-          fontSize: '11px',
-          color: '#64748b',
-          textAlign: 'center',
-          fontWeight: 600
-        }}>
-          Oraciones completadas: {completedTripletIds.length} de {TARGET_TRIPLETS.length}
         </div>
       </div>
     </div>

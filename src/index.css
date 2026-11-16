@@ -28,7 +28,6 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Explicit root sizing so children with height: 100% NEVER collapse to 0 */
 #root {
   width: 100vw;
   height: 100vh;
@@ -59,64 +58,112 @@ html, body {
   border-radius: 0 !important;
 }
 
-/* Flat 2D RPG UI Styles (Zero Shadows, Clean & Instant Rendering) */
+/* RPG Boxes */
 .rpg-box {
   background: #ffffff;
   border: 2px solid #b45309;
-  border-radius: 10px;
+  border-radius: 12px;
   position: relative;
 }
 
 .rpg-box-dark {
   background: #1e293b;
   border: 2px solid #f59e0b;
-  border-radius: 10px;
+  border-radius: 12px;
   color: #f8fafc;
 }
 
-/* Flat 2D Buttons */
-.rpg-btn {
+/* ========================================================
+   ESTILO DE BOTONES DE PIEDRA TALLADA (RÚSTICO INCA / RPG)
+   ======================================================== */
+.rpg-btn,
+.stone-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-family: inherit;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 2px solid #78350f;
-  background-color: #f59e0b;
-  color: #451a03;
+  letter-spacing: 0.8px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  
+  /* Textura de piedra tallada con biseles claros y sombras de relieve */
+  background: linear-gradient(180deg, #dfdacd 0%, #c4bdae 45%, #a89f8f 100%);
+  border: 3px solid #5a5245;
+  border-bottom: 5px solid #3c362c;
+  color: #2b261f;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    inset 0 2px 2px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.25),
+    0 4px 8px rgba(0, 0, 0, 0.45);
+  
   cursor: pointer;
-  transition: opacity 0.05s ease;
+  transition: all 0.12s ease-out;
+  position: relative;
+  overflow: hidden;
 }
 
-.rpg-btn:hover {
-  opacity: 0.95;
+.rpg-btn:hover,
+.stone-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.2),
+    0 6px 14px rgba(0, 0, 0, 0.5);
 }
 
-.rpg-btn:active {
-  opacity: 0.85;
+.rpg-btn:active,
+.stone-btn:active {
+  transform: translateY(2px);
+  border-bottom: 2px solid #3c362c;
+  box-shadow: 
+    inset 0 3px 5px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.rpg-btn-secondary {
-  background-color: #f1f5f9;
-  border-color: #475569;
-  color: #1e293b;
+/* Variante Piedra Verde (Éxito / Continuar) */
+.rpg-btn-green,
+.stone-btn-green {
+  background: linear-gradient(180deg, #86efac 0%, #22c55e 40%, #15803d 100%) !important;
+  border: 3px solid #14532d !important;
+  border-bottom: 5px solid #052e16 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
-.rpg-btn-green {
-  background-color: #16a34a;
-  border-color: #14532d;
-  color: #ffffff;
+/* Variante Piedra Roja / Terracota (Alerta / Reintentar) */
+.rpg-btn-red,
+.stone-btn-red {
+  background: linear-gradient(180deg, #fca5a5 0%, #ef4444 40%, #b91c1c 100%) !important;
+  border: 3px solid #7f1d1d !important;
+  border-bottom: 5px solid #450a0a !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
-.rpg-btn-red {
-  background-color: #dc2626;
-  border-color: #7f1d1d;
-  color: #ffffff;
+/* Variante Secundaria / Piedra Ceniza */
+.rpg-btn-secondary,
+.stone-btn-secondary {
+  background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 45%, #94a3b8 100%) !important;
+  border: 3px solid #475569 !important;
+  border-bottom: 5px solid #1e293b !important;
+  color: #0f172a !important;
+}
+
+/* Botón Circular de Piedra (Audio / Ajustes) */
+.stone-btn-round {
+  width: 54px;
+  height: 54px;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 4px solid #3c362c !important;
 }
 
 /* Scrollbars */
@@ -128,6 +175,6 @@ html, body {
   background: rgba(0, 0, 0, 0.05);
 }
 ::-webkit-scrollbar-thumb {
-  background: #d97706;
+  background: #a89f8f;
   border-radius: 3px;
 }

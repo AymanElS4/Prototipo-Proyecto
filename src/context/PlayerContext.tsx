@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PlayerState, PlayerCustomization, InventoryItem, Badge } from '../types/player';
 import { sfx } from '../utils/audioSynthesis';
+import { canMoveTo } from '../utils/collision';
 
 interface PlayerContextType {
   player: PlayerState;
@@ -74,25 +75,57 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const setPosition = (x: number, y: number, direction?: PlayerState['direction']) => {
-    setPlayer(prev => ({
-      ...prev,
-      x: Math.round(x),
-      y: Math.round(y),
-      direction: direction || prev.direction
-    }));
+    const targetX = Math.round(x);
+    const targetY = Math.round(y);
+    if (canMoveTo(targetX, targetY)) {
+      setPlayer(prev => ({
+        ...prev,
+        x: targetX,
+        y: targetY,
+        direction: direction || prev.direction
+      }));
+    }
   };
 
   const moveBy = (dx: number, dy: number, dir: PlayerState['direction']) => {
     setPlayer(prev => {
-      // Map limits adjusted for bigger phone display (420px width x 560px height)
-      const newX = Math.max(24, Math.min(390, prev.x + dx));
-      const newY = Math.max(50, Math.min(520, prev.y + dy));
+      const nextX = prev.x + dx;
+      const nextY = prev.y + dy;
+
+      // Check full collision first
+      if (canMoveTo(nextX, nextY)) {
+        return {
+          ...prev,
+          x: nextX,
+          y: nextY,
+          direction: dir,
+          isMoving: true
+        };
+      }
+
+      // Slide along axes if diagonal or partial block
+      if (dx !== 0 && canMoveTo(nextX, prev.y)) {
+        return {
+          ...prev,
+          x: nextX,
+          direction: dir,
+          isMoving: true
+        };
+      }
+      if (dy !== 0 && canMoveTo(prev.x, nextY)) {
+        return {
+          ...prev,
+          y: nextY,
+          direction: dir,
+          isMoving: true
+        };
+      }
+
+      // Blocked by collision, only change face direction
       return {
         ...prev,
-        x: newX,
-        y: newY,
         direction: dir,
-        isMoving: true
+        isMoving: false
       };
     });
   };

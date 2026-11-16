@@ -1,5 +1,7 @@
 import React from 'react';
 import { PlayerState } from '../../types/player';
+import { MODERN_ASSETS } from '../../utils/modernAssets';
+import { PixelImage } from '../ui/PixelImage';
 
 interface CharacterProps {
   player: PlayerState;
@@ -8,13 +10,25 @@ interface CharacterProps {
 export const Character: React.FC<CharacterProps> = ({ player }) => {
   const { customization, x, y, direction, isMoving } = player;
 
+  // Select sprite according to movement direction
+  const getCharacterSprite = () => {
+    switch (direction) {
+      case 'up': return MODERN_ASSETS.characters.heroBack;
+      case 'left': return MODERN_ASSETS.characters.heroLeft;
+      case 'right': return MODERN_ASSETS.characters.heroRight;
+      case 'down':
+      default:
+        return MODERN_ASSETS.characters.hero;
+    }
+  };
+
   return (
     <div
       style={{
         position: 'absolute',
         left: `${x}px`,
         top: `${y}px`,
-        transform: 'translate(-50%, -50%)',
+        transform: 'translate(-50%, -100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -39,53 +53,33 @@ export const Character: React.FC<CharacterProps> = ({ player }) => {
         {customization.name}
       </div>
 
-      {/* Player Sprite */}
+      {/* Player Sprite directly in world (Proportionate to 16-32px buildings) */}
       <div 
         style={{
-          width: '46px',
-          height: '46px',
-          borderRadius: '50%',
-          backgroundColor: customization.outfitColor,
-          border: '3px solid #78350f',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.35)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '24px',
           position: 'relative',
           transform: isMoving ? 'scale(1.08)' : 'none',
-          transition: 'transform 0.1s ease'
+          transition: 'transform 0.08s ease',
+          filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.4))'
         }}
       >
-        <span>🧑🏽</span>
+        <PixelImage src={getCharacterSprite()} alt="Player" width={22} height={44} />
 
         {/* Hat Accessory */}
         {customization.hat === 'chullo' && (
-          <span style={{ position: 'absolute', top: '-14px', fontSize: '20px' }}>🧶</span>
+          <span style={{ position: 'absolute', top: '-10px', fontSize: '15px' }}>🧶</span>
         )}
         {customization.hat === 'sombrero' && (
-          <span style={{ position: 'absolute', top: '-14px', fontSize: '20px' }}>👒</span>
+          <span style={{ position: 'absolute', top: '-10px', fontSize: '15px' }}>👒</span>
         )}
         {customization.hat === 'gorra' && (
-          <span style={{ position: 'absolute', top: '-14px', fontSize: '20px' }}>🧢</span>
+          <span style={{ position: 'absolute', top: '-10px', fontSize: '15px' }}>🧢</span>
         )}
         {customization.hat === 'chullo_dorado' && (
-          <span style={{ position: 'absolute', top: '-16px', fontSize: '22px' }}>👑</span>
+          <span style={{ position: 'absolute', top: '-12px', fontSize: '15px' }}>👑</span>
         )}
-
-        {/* Direction dot */}
-        <div style={{
-          position: 'absolute',
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          backgroundColor: '#f59e0b',
-          border: '1px solid #ffffff',
-          top: direction === 'up' ? '2px' : direction === 'down' ? 'auto' : '19px',
-          bottom: direction === 'down' ? '2px' : 'auto',
-          left: direction === 'left' ? '2px' : direction === 'right' ? 'auto' : '19px',
-          right: direction === 'right' ? '2px' : 'auto'
-        }} />
       </div>
     </div>
   );

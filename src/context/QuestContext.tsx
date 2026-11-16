@@ -15,6 +15,7 @@ interface QuestContextType {
   closeDialogue: () => void;
   advanceQuestStep: () => void;
   completeModuleOne: () => void;
+  restartLevelOne: () => void;
 }
 
 const INITIAL_QUEST: Quest = {
@@ -27,43 +28,43 @@ const INITIAL_QUEST: Quest = {
   steps: [
     {
       id: 'step_talk_john',
-      instruction: 'Habla con Mr. John en la plaza mayor para saber qué necesita.',
+      instruction: 'Habla con Mr. John en el aeropuerto para saber qué necesita.',
       targetNpcOrObject: 'john',
       isCompleted: false
     },
     {
       id: 'step_search_bag',
-      instruction: 'Encuentra la "blue backpack with a circle" oculta en el pueblo.',
+      instruction: 'Encuentra la "blue backpack with a circle" en la faja de equipajes.',
       targetNpcOrObject: 'suitcase-blue-circle',
       isCompleted: false
     },
     {
       id: 'step_return_bag',
-      instruction: 'Regresa con Mr. John y entrégale su maleta azul.',
+      instruction: 'Regresa con Mr. John y entrégale su mochila azul.',
       targetNpcOrObject: 'john',
       isCompleted: false
     },
     {
       id: 'step_word_search',
-      instruction: 'Resuelve la Sopa de Letras con las palabras clave aprendidas (Act. 2).',
+      instruction: 'Resuelve la Sopa de Letras con las palabras clave (Actividad 2).',
       targetNpcOrObject: 'word_search',
       isCompleted: false
     },
     {
       id: 'step_sentence_matching',
-      instruction: 'Une con líneas los miembros de familia, profesiones y lugares (Act. 3).',
+      instruction: 'Une con líneas los personajes, profesiones y lugares (Actividad 3).',
       targetNpcOrObject: 'sentence_matching',
       isCompleted: false
     },
     {
       id: 'step_speaking',
-      instruction: 'Practica la pronunciación en inglés con el micrófono simulado (Act. 4).',
+      instruction: 'Practica la expresión oral en la sección de Speaking (Actividad 4).',
       targetNpcOrObject: 'listening_speaking',
       isCompleted: false
     },
     {
       id: 'step_receive_rewards',
-      instruction: 'Habla con Don Mateo en el Centro de Información para reclamar la Llave.',
+      instruction: 'Habla con Don Mateo para recibir la Llave Dorada del Valle.',
       targetNpcOrObject: 'mateo',
       isCompleted: false
     }
@@ -103,12 +104,10 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [suitcasesVisible, setSuitcasesVisible] = useState<boolean>(() => {
-    return (quest?.currentStepIndex || 0) >= 1;
+    return (quest?.currentStepIndex || 0) === 1;
   });
 
-  const [hasFoundBackpack, setHasFoundBackpack] = useState<boolean>(() => {
-    return (quest?.currentStepIndex || 0) >= 2;
-  });
+  const [hasFoundBackpack, setHasFoundBackpack] = useState<boolean>(false);
 
   const [activeActivityModal, setActiveActivityModal] = useState<
     'none' | 'activity_1_intro' | 'activity_2_intro' | 'word_search' | 'activity_3_intro' | 'sentence_matching' | 'listening_speaking' | 'module_complete'
@@ -123,6 +122,19 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch {}
   }, [quest]);
 
+  // Restart level 1 cleanly so the user can replay it without getting stuck
+  const restartLevelOne = () => {
+    setQuest(INITIAL_QUEST);
+    setSuitcasesVisible(false);
+    setHasFoundBackpack(false);
+    setActiveActivityModal('none');
+    setActiveDialogueNpcId(null);
+    setActiveDialogueNodeId(null);
+    try {
+      localStorage.removeItem('rpg_quest');
+    } catch {}
+  };
+
   const openDialogue = (npcId: string, nodeId?: string) => {
     setActiveDialogueNpcId(npcId);
     if (nodeId) {
@@ -136,19 +148,23 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setActiveDialogueNodeId('waiting_for_bag');
         } else if (stepIdx === 2) {
           setActiveDialogueNodeId('bag_found');
-        } else if (stepIdx >= 4) {
-          setActiveDialogueNodeId('all_done_john');
+        } else if (stepIdx === 3) {
+          setActiveDialogueNodeId('word_search_intro');
+        } else if (stepIdx === 4) {
+          setActiveDialogueNodeId('word_search_done');
+        } else if (stepIdx === 5) {
+          setActiveDialogueNodeId('matching_done');
         } else {
           setActiveDialogueNodeId('start');
         }
       } else if (npcId === 'mateo') {
-        if (stepIdx >= 5) {
+        if (stepIdx >= 6) {
           setActiveDialogueNodeId('mateo_reward');
         } else {
-          setActiveDialogueNodeId('mateo_start');
+          setActiveDialogueNodeId('start');
         }
-      } else if (npcId === 'rosa') {
-        setActiveDialogueNodeId('rosa_start');
+      } else {
+        setActiveDialogueNodeId('start');
       }
     }
   };
@@ -199,7 +215,8 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         openDialogue,
         closeDialogue,
         advanceQuestStep,
-        completeModuleOne
+        completeModuleOne,
+        restartLevelOne
       }}
     >
       {children}

@@ -1,32 +1,34 @@
 import { NPCData } from '../types/dialogue';
+import { MODERN_ASSETS } from '../utils/modernAssets';
 
 export const NPCS_DATA: Record<string, NPCData> = {
   john: {
     id: 'john',
-    name: 'Mr. John Miller',
-    role: 'Turista de California',
+    name: 'Mr. John',
+    role: 'Tourist at Airport',
     avatarIcon: '🤠',
+    spriteImage: MODERN_ASSETS.characters.alex,
     color: '#3b82f6',
-    x: 200,
-    y: 120,
+    x: 290,
+    y: 220, // Near the luggage claim / info display in the airport
     initialDialogId: 'start',
     dialogueTree: {
       start: {
         id: 'start',
         speaker: 'Mr. John',
-        speakerRole: 'Turista en apuros',
+        speakerRole: 'Tourist',
         avatarIcon: '🤠',
-        text: 'Excuse me! ¡Hola! I am so worried... I lost my luggage somewhere around this beautiful square. ¿Podrías ayudarme a encontrarla?',
+        text: 'Excuse me! I just arrived at the airport and I cannot find my luggage at baggage claim. Could you please help me find it?',
         englishSnippet: 'Excuse me! I lost my luggage. Could you help me find it?',
         audioSimulated: true,
         options: [
           {
-            text: '¡Por supuesto! Yes, I can help you! 🤝',
+            text: 'Yes, of course! I can help you! 🤝',
             nextDialogId: 'describe_bag',
             action: 'accept_quest'
           },
           {
-            text: 'I am a bit busy right now. (Luego vuelvo)',
+            text: 'I am a bit busy right now.',
             action: 'close'
           }
         ]
@@ -34,14 +36,14 @@ export const NPCS_DATA: Record<string, NPCData> = {
       describe_bag: {
         id: 'describe_bag',
         speaker: 'Mr. John',
-        speakerRole: 'Turista en apuros',
+        speakerRole: 'Tourist',
         avatarIcon: '🤠',
-        text: 'Thank you! It is a blue backpack with a circle in the center. ¡Es una maleta azul con un círculo! Por favor búscala en los alrededores de la plaza.',
-        englishSnippet: 'It is a blue backpack with a circle.',
+        text: 'Thank you! It is a blue backpack with a cross in the center. Please check the luggage carousel carefully.',
+        englishSnippet: 'It is a blue backpack with a cross in the center.',
         audioSimulated: true,
         options: [
           {
-            text: '¡Entendido! I will search for the blue backpack with a circle. 🔍',
+            text: 'Understood! I will find the blue backpack with a cross. 🔍',
             action: 'close'
           }
         ]
@@ -49,14 +51,14 @@ export const NPCS_DATA: Record<string, NPCData> = {
       waiting_for_bag: {
         id: 'waiting_for_bag',
         speaker: 'Mr. John',
-        speakerRole: 'Turista en apuros',
+        speakerRole: 'Tourist',
         avatarIcon: '🤠',
-        text: 'Have you seen it? Remember: it is a BLUE backpack with a CIRCLE. ¡No te rindas!',
-        englishSnippet: 'Remember: it is a blue backpack with a circle.',
+        text: 'Have you seen it? Remember: it is a BLUE backpack with a CROSS on the luggage carousel.',
+        englishSnippet: 'Remember: it is a blue backpack with a cross.',
         audioSimulated: true,
         options: [
           {
-            text: 'Sigo buscando por el pueblo... 🎒',
+            text: 'I am still searching on the conveyor belt... 🎒',
             action: 'close'
           }
         ]
@@ -64,14 +66,14 @@ export const NPCS_DATA: Record<string, NPCData> = {
       bag_found: {
         id: 'bag_found',
         speaker: 'Mr. John',
-        speakerRole: 'Turista agradecido',
+        speakerRole: 'Tourist',
         avatarIcon: '😄',
-        text: '¡OMG, you found my blue backpack with a circle! ¡Muchísimas gracias! My passport and notes were inside.',
-        englishSnippet: 'You found my blue backpack with a circle! Thank you so much!',
+        text: 'Awesome! You found my blue backpack with a cross! Thank you so much! My passport and notes were inside.',
+        englishSnippet: 'You found my blue backpack with a cross! Thank you so much!',
         audioSimulated: true,
         options: [
           {
-            text: '¡De nada! Happy to help! 🎉',
+            text: 'You are welcome! Let\'s practice key words 🔤',
             nextDialogId: 'word_search_intro'
           }
         ]
@@ -79,93 +81,73 @@ export const NPCS_DATA: Record<string, NPCData> = {
       word_search_intro: {
         id: 'word_search_intro',
         speaker: 'Mr. John',
-        speakerRole: 'Turista agradecido',
-        avatarIcon: '📝',
-        text: 'Estaba practicando español e inglés antes de perder mi maleta. ¿Podrías ayudarme a identificar las palabras clave en esta sopa de letras de mi libreta de viaje?',
+        speakerRole: 'Tourist',
+        avatarIcon: '😄',
+        text: 'Before leaving the airport terminal, can you help me find the key words in this word search?',
         englishSnippet: 'Can you help me find the key words in this word search?',
         audioSimulated: true,
         options: [
           {
-            text: '¡Claro! Let’s do the Word Search! 🔤',
+            text: 'Yes! Let\'s do the Word Search! 📝',
             action: 'open_activity_intro'
           }
         ]
       },
-      ask_for_help: {
-        id: 'ask_for_help',
+      word_search_done: {
+        id: 'word_search_done',
         speaker: 'Mr. John',
-        speakerRole: 'Turista agradecido',
-        avatarIcon: '🤔',
-        text: '¡Increíble cómo encontraste las palabras en la libreta! Por cierto, aún necesito hacer trámites y almorzar en el pueblo... ¿Sabes quién me podría ayudar?',
-        englishSnippet: 'Do you know who could help me in town?',
+        speakerRole: 'Tourist',
+        avatarIcon: '😄',
+        text: 'Great job with the vocabulary! Now let\'s connect family members, professions, and their workplaces.',
+        englishSnippet: 'Let\'s connect family members, professions, and workplaces!',
+        audioSimulated: true,
         options: [
           {
-            text: '¡Sí! Mi familia trabaja en varios lugares de San Pedro. 🤝',
-            nextDialogId: 'matching_intro_prompt'
-          }
-        ]
-      },
-      matching_intro_prompt: {
-        id: 'matching_intro_prompt',
-        speaker: 'Mr. John',
-        speakerRole: 'Turista curioso',
-        avatarIcon: '📝',
-        text: '¡Genial! Déjame anotar las oraciones sobre tu tío, tu tía y tu primo, qué profesiones tienen y en qué lugares trabajan.',
-        options: [
-          {
-            text: '¡Unir con líneas las oraciones! (Actividad 3) 🔗',
+            text: 'Let\'s match the columns! 🔗',
             action: 'open_activity_3'
           }
         ]
       },
-      after_matching_john: {
-        id: 'after_matching_john',
+      matching_done: {
+        id: 'matching_done',
         speaker: 'Mr. John',
-        speakerRole: 'Turista impresionado',
-        avatarIcon: '🌟',
-        text: '¡Qué gran familia tienes en San Pedro! Ahora solo nos falta practicar la pronunciación oral de la frase en inglés con el micrófono.',
-        englishSnippet: 'Excuse me, I lost my blue backpack.',
+        speakerRole: 'Tourist',
+        avatarIcon: '😄',
+        text: 'Outstanding! Now let\'s practice your oral pronunciation with the microphone in the Speaking Section.',
+        englishSnippet: 'Now let\'s practice your pronunciation in the Speaking Section!',
+        audioSimulated: true,
         options: [
           {
-            text: '¡Practicar pronunciación oral! (Actividad 4) 🎙️',
+            text: 'Go to Speaking Section! 🎙️',
             action: 'open_listening_speaking'
-          }
-        ]
-      },
-      all_done_john: {
-        id: 'all_done_john',
-        speaker: 'Mr. John',
-        speakerRole: 'Turista feliz',
-        avatarIcon: '👑',
-        text: 'You are an incredible guide! Has completado todas las actividades del Módulo 1. Don Mateo en el Centro de Información tiene la Llave Dorada para ti.',
-        options: [
-          {
-            text: '¡Ir con Don Mateo por la Llave! 🗝️',
-            action: 'close'
           }
         ]
       }
     }
   },
+
   mateo: {
     id: 'mateo',
     name: 'Don Mateo',
-    role: 'Jefe del Centro de Información',
+    role: 'Tour Guide Supervisor',
     avatarIcon: '🧔🏽',
-    color: '#059669',
-    x: 320,
-    y: 80,
-    initialDialogId: 'mateo_start',
+    spriteImage: MODERN_ASSETS.characters.sam,
+    color: '#15803d',
+    x: 80,
+    y: 220,
+    initialDialogId: 'start',
     dialogueTree: {
-      mateo_start: {
-        id: 'mateo_start',
+      start: {
+        id: 'start',
         speaker: 'Don Mateo',
-        speakerRole: 'Guía Maestro',
+        speakerRole: 'Tour Guide Supervisor',
         avatarIcon: '🧔🏽',
-        text: '¡Bienvenido a San Pedro, joven guía! Los turistas vienen de todo el mundo y necesitan nuestra orientación. Escuché que un turista extranjero llamado John necesita apoyo.',
+        text: 'Welcome to the airport! A tourist has just arrived and needs help finding his luggage. Please talk to him in English.',
+        englishSnippet: 'Welcome to the airport! Please assist the tourist.',
+        audioSimulated: false,
         options: [
           {
-            text: 'I will do my best, Don Mateo! 🫡',
+            text: 'I will talk to him right away! 🫡',
             action: 'close'
           }
         ]
@@ -173,37 +155,14 @@ export const NPCS_DATA: Record<string, NPCData> = {
       mateo_reward: {
         id: 'mateo_reward',
         speaker: 'Don Mateo',
-        speakerRole: 'Guía Maestro',
-        avatarIcon: '🎖️',
-        text: '¡Extraordinario trabajo con Mr. John! Has demostrado que dominas el vocabulario esencial de asistencia al viajero. Por tu gran desempeño en el Módulo 1, te hago entrega de la sagrada LLAVE DORADA del pueblo y tu CHULLO TRADICIONAL DE GUÍA.',
+        speakerRole: 'Tour Guide Supervisor',
+        avatarIcon: '🧔🏽',
+        text: 'Outstanding work! You successfully helped the tourist with his backpack, completed the word search, matched the occupations and passed the Speaking section. Here is your Golden Key!',
+        englishSnippet: 'Outstanding work! You have earned the Golden Key!',
+        audioSimulated: false,
         options: [
           {
-            text: '¡Recibir recompensas con honor! 🔑✨',
-            action: 'close'
-          }
-        ]
-      }
-    }
-  },
-  rosa: {
-    id: 'rosa',
-    name: 'Doña Rosa',
-    role: 'Maestra Tejedora Andina',
-    avatarIcon: '👵🏽',
-    color: '#d97706',
-    x: 60,
-    y: 190,
-    initialDialogId: 'rosa_start',
-    dialogueTree: {
-      rosa_start: {
-        id: 'rosa_start',
-        speaker: 'Doña Rosa',
-        speakerRole: 'Artesana Textil',
-        avatarIcon: '👵🏽',
-        text: 'Allillanchu (¡Hola!), joven. Qué alegría verte aprendiendo inglés. Recuerda que los colores en inglés van antes que el objeto: decimos "blue backpack", no "backpack blue". ¡Muchos éxitos!',
-        options: [
-          {
-            text: '¡Gran consejo gramatical, Doña Rosa! Gracias. 🙏',
+            text: 'Claim Golden Key! 🗝️',
             action: 'close'
           }
         ]

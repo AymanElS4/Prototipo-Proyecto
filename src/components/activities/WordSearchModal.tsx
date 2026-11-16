@@ -3,10 +3,11 @@ import { useQuest } from '../../context/QuestContext';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { WORD_SEARCH_GRID, WORD_SEARCH_TARGETS, WORD_COORDINATES } from '../../data/wordSearchData';
-import { Check, X, RotateCcw, Volume2 } from 'lucide-react';
+import { Check, X, RotateCcw, Volume2, Sparkles, HelpCircle } from 'lucide-react';
 import { sfx } from '../../utils/audioSynthesis';
 import { speakEnglish } from '../../utils/speechSynth';
 import confetti from 'canvas-confetti';
+import { AIRPORT_ASSETS } from '../../utils/airportAssets';
 
 export const WordSearchModal: React.FC = () => {
   const { activeActivityModal, setActiveActivityModal, advanceQuestStep, openDialogue } = useQuest();
@@ -81,42 +82,43 @@ export const WordSearchModal: React.FC = () => {
   const handleAllWordsFound = () => {
     try {
       confetti({
-        particleCount: 85,
-        spread: 75,
+        particleCount: 80,
+        spread: 70,
         origin: { y: 0.6 }
       });
     } catch {}
 
     addXp(120);
-    addCoins(50);
+    addCoins(30);
+
     unlockBadge({
-      id: 'word_search_master',
-      title: 'Maestro de las Letras',
-      description: 'Encontraste todas las palabras clave en la libreta de viaje de John.',
+      id: 'word_sleuth',
+      title: 'Detective de Palabras',
+      description: 'Encontraste todas las palabras clave del aeropuerto en la sopa de letras.',
       icon: '🔤'
     });
 
     addHistoryRecord({
       activityType: 'word_search',
-      title: 'Sopa de Letras: Vocabulario de Viaje',
+      title: 'Sopa de Letras: Vocabulario del Aeropuerto',
       score: 100,
       maxScore: 100,
       mistakesCount: mistakes,
       completed: true,
-      notes: 'Dominio de: Backpack, Blue, Circle, Cloudy.'
+      notes: `Palabras dominadas: ${WORD_SEARCH_TARGETS.map(t => t.word).join(', ')}`
     });
 
-    setActiveActivityModal('none');
     advanceQuestStep();
 
     showFeedback({
-      title: '¡Sopa de Letras Completada!',
-      message: '¡Excelente trabajo! Has identificado las cuatro palabras en inglés con sus respectivos significados visuales.',
+      title: '¡BIEN HECHO! / Well done',
+      message: '¡Excelente! Has encontrado todas las palabras en la sopa de letras del exterior del aeropuerto.',
       englishPhrase: 'Backpack, Blue, Circle, Cloudy',
       isSuccess: true,
-      tip: 'Mr. John está impresionado con tu vocabulario. ¡Habla con Don Mateo para reclamar tu recompensa!',
+      tip: 'Ahora continúa con la actividad de relacionar columnas para conectar profesiones y lugares de trabajo.',
       onContinue: () => {
-        openDialogue('john', 'ask_for_help');
+        setActiveActivityModal('none');
+        openDialogue('john', 'word_search_done');
       }
     });
   };
@@ -134,7 +136,7 @@ export const WordSearchModal: React.FC = () => {
       try { sfx.playError(); } catch {}
       setMistakes(prev => prev + 1);
       showFeedback({
-        title: 'Palabra no identificada',
+        title: '¡Inténtalo de nuevo! / Try Again!',
         message: `Las letras seleccionadas ("${formed}") no corresponden a ninguna de las palabras pendientes de la lista.`,
         isSuccess: false,
         tip: 'Observa bien las tarjetas inferiores. Puedes buscar en horizontal o vertical.'
@@ -147,145 +149,87 @@ export const WordSearchModal: React.FC = () => {
     <div style={{
       position: 'absolute',
       inset: 0,
-      backgroundColor: 'rgba(15, 23, 42, 0.92)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 160,
-      padding: '14px'
+      padding: '14px',
+      overflow: 'hidden'
     }}>
+      {/* Aeropuerto - Exterior de fondo atenuado */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: `url(${AIRPORT_ASSETS.exteriorSvg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'brightness(0.35) blur(2px)',
+        zIndex: 1
+      }} />
+
+      {/* Tablero central destacado */}
       <div 
-        className="rpg-box"
+        className="rpg-box animate-float"
         style={{
+          position: 'relative',
+          zIndex: 10,
           width: '100%',
-          maxWidth: '400px',
-          padding: '18px 16px',
+          maxWidth: '430px',
+          padding: '16px 14px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px',
-          backgroundColor: '#fffbeb',
-          maxHeight: '94vh',
+          gap: '10px',
+          backgroundColor: 'rgba(255, 251, 235, 0.96)',
+          backdropFilter: 'blur(8px)',
+          border: '4px solid #b45309',
+          boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+          maxHeight: '92vh',
           overflowY: 'auto'
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '2px solid #fde68a',
+          paddingBottom: '8px'
+        }}>
           <div>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#b45309', textTransform: 'uppercase' }}>
-              Libreta de Viajero • Actividad 2
+            <span style={{
+              fontSize: '10px',
+              fontWeight: 900,
+              backgroundColor: '#fed7aa',
+              color: '#9a3412',
+              padding: '2px 8px',
+              borderRadius: '8px',
+              textTransform: 'uppercase'
+            }}>
+              Actividad 2 • Aeropuerto Exterior
             </span>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#78350f' }}>
-              Sopa de Letras Turística
-            </h2>
+            <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#78350f', marginTop: '4px', margin: 0 }}>
+              Sopa de Letras (Word Search)
+            </h3>
           </div>
+
           <button
-            onClick={() => {
-              try { sfx.playClick(); } catch {}
-              setActiveActivityModal('none');
-            }}
+            onClick={() => setActiveActivityModal('none')}
+            title="Cerrar"
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#78350f',
-              cursor: 'pointer'
+              background: '#fef3c7',
+              border: '2px solid #b45309',
+              borderRadius: '8px',
+              padding: '4px 8px',
+              cursor: 'pointer',
+              fontWeight: 800,
+              fontSize: '12px'
             }}
           >
-            <X size={24} />
+            ✕
           </button>
         </div>
 
-        {/* Target Words with Graphic Objects & Green Checkmarks */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '8px'
-        }}>
-          {WORD_SEARCH_TARGETS.map(target => {
-            const isFound = foundWords.includes(target.word);
-
-            return (
-              <div
-                key={target.id}
-                onClick={() => handleDirectSelect(target.word)}
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '10px',
-                  backgroundColor: isFound ? '#dcfce7' : '#ffffff',
-                  border: isFound ? '2px solid #16a34a' : '2px solid #fde68a',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.06)'
-                }}
-              >
-                {/* Graphic Icon */}
-                <div style={{
-                  fontSize: '26px',
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {target.icon}
-                  {/* Green checkmark overlay */}
-                  {isFound && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '-6px',
-                      right: '-6px',
-                      backgroundColor: '#16a34a',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: '20px',
-                      height: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '2px solid white'
-                    }}>
-                      <Check size={14} strokeWidth={3} />
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    color: isFound ? '#15803d' : '#1e293b',
-                    textDecoration: isFound ? 'line-through' : 'none'
-                  }}>
-                    {target.word}
-                  </div>
-                  <div style={{ fontSize: '10px', color: isFound ? '#16a34a' : '#64748b' }}>
-                    {target.translation}
-                  </div>
-                </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    speakEnglish(target.word.toLowerCase());
-                  }}
-                  title="Escuchar audio"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#3b82f6',
-                    cursor: 'pointer',
-                    padding: '2px'
-                  }}
-                >
-                  <Volume2 size={16} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Word Search Grid (8x8) - Spacious letter buttons */}
+        {/* Word Search Grid (8x8) */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(8, 1fr)',
@@ -343,7 +287,7 @@ export const WordSearchModal: React.FC = () => {
           )}
         </div>
 
-        {/* Actions */}
+        {/* Action Validation Bar */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -355,19 +299,19 @@ export const WordSearchModal: React.FC = () => {
             backgroundColor: '#ffffff',
             border: '2px dashed #94a3b8',
             borderRadius: '8px',
-            padding: '8px 12px',
-            fontSize: '13px',
+            padding: '6px 10px',
+            fontSize: '12px',
             fontWeight: 800,
             color: '#1e293b',
-            minHeight: '38px',
+            minHeight: '36px',
             display: 'flex',
             alignItems: 'center'
           }}>
             {selectedCoords.length > 0 ? (
               <span>Selección: {selectedCoords.map(([r, c]) => WORD_SEARCH_GRID[r][c]).join('')}</span>
             ) : (
-              <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '12px' }}>
-                Toca letras o toca una palabra arriba
+              <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '11px' }}>
+                Toca letras en la cuadrícula o toca una palabra
               </span>
             )}
           </div>
@@ -377,12 +321,12 @@ export const WordSearchModal: React.FC = () => {
             disabled={selectedCoords.length === 0}
             className="rpg-btn rpg-btn-green"
             style={{
-              padding: '8px 14px',
+              padding: '6px 12px',
               fontSize: '12px',
               opacity: selectedCoords.length === 0 ? 0.5 : 1
             }}
           >
-            <Check size={16} />
+            <Check size={14} />
             <span>Validar</span>
           </button>
 
@@ -390,19 +334,110 @@ export const WordSearchModal: React.FC = () => {
             onClick={() => setSelectedCoords([])}
             disabled={selectedCoords.length === 0}
             className="rpg-btn rpg-btn-secondary"
-            style={{ padding: '8px 10px' }}
+            style={{ padding: '6px 8px' }}
             title="Limpiar selección"
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={14} />
           </button>
         </div>
 
+        {/* Panel Inferior de Progreso (Palabras a encontrar con confirmación) */}
         <div style={{
-          fontSize: '11px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '6px',
+          borderTop: '2px solid #fde68a',
+          paddingTop: '8px'
+        }}>
+          {WORD_SEARCH_TARGETS.map(target => {
+            const isFound = foundWords.includes(target.word);
+
+            return (
+              <div
+                key={target.id}
+                onClick={() => handleDirectSelect(target.word)}
+                style={{
+                  padding: '6px 8px',
+                  borderRadius: '8px',
+                  backgroundColor: isFound ? '#dcfce7' : '#ffffff',
+                  border: isFound ? '2px solid #16a34a' : '2px solid #fde68a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.06)'
+                }}
+              >
+                <div style={{
+                  fontSize: '22px',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {target.icon}
+                  {isFound && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      right: '-6px',
+                      backgroundColor: '#16a34a',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: '18px',
+                      height: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '2px solid white'
+                    }}>
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    color: isFound ? '#15803d' : '#1e293b',
+                    textDecoration: isFound ? 'line-through' : 'none'
+                  }}>
+                    {target.word}
+                  </div>
+                  <div style={{ fontSize: '9px', color: isFound ? '#16a34a' : '#64748b' }}>
+                    {target.translation}
+                  </div>
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    speakEnglish(target.word.toLowerCase());
+                  }}
+                  title="Escuchar audio"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#3b82f6',
+                    cursor: 'pointer',
+                    padding: '2px'
+                  }}
+                >
+                  <Volume2 size={14} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{
+          fontSize: '10px',
           color: '#64748b',
           textAlign: 'center'
         }}>
-          Progreso: {foundWords.length} de {WORD_SEARCH_TARGETS.length} palabras encontradas
+          Progreso: {foundWords.length} de {WORD_SEARCH_TARGETS.length} palabras identificadas
         </div>
       </div>
     </div>

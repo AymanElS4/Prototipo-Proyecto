@@ -80,10 +80,20 @@ export const FeedbackModal: React.FC = () => {
           fontSize: '20px',
           fontWeight: 800,
           color: isSuccess ? '#15803d' : '#b91c1c',
-          marginBottom: '10px'
+          marginBottom: '6px'
         }}>
-          {title}
+          {isSuccess ? '¡BIEN HECHO! / Well done' : '¡Inténtalo de nuevo! / Try Again!'}
         </h3>
+        {title && (
+          <h4 style={{
+            fontSize: '14px',
+            fontWeight: 700,
+            color: '#475569',
+            marginBottom: '10px'
+          }}>
+            {title}
+          </h4>
+        )}
 
         <p style={{
           fontSize: '14px',
@@ -158,16 +168,16 @@ export const FeedbackModal: React.FC = () => {
           <button
             onClick={handleAction}
             className={`rpg-btn ${isSuccess ? 'rpg-btn-green' : 'rpg-btn-red'}`}
-            style={{ width: '100%', fontSize: '14px', padding: '12px' }}
+            style={{ width: '100%', fontSize: '15px', fontWeight: 800, padding: '12px' }}
           >
             {isSuccess ? (
               <>
-                <span>Continuar</span>
+                <span>CONTINUE</span>
                 <ArrowRight size={18} />
               </>
             ) : (
               <>
-                <span>Intentar nuevamente</span>
+                <span>TRY AGAIN</span>
                 <RotateCcw size={18} />
               </>
             )}

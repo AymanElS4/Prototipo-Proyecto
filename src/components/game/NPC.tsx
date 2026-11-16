@@ -2,6 +2,7 @@ import React from 'react';
 import { NPCData } from '../../types/dialogue';
 import { useQuest } from '../../context/QuestContext';
 import { sfx } from '../../utils/audioSynthesis';
+import { PixelImage } from '../ui/PixelImage';
 
 interface NPCProps {
   npc: NPCData;
@@ -25,6 +26,7 @@ export const NPC: React.FC<NPCProps> = ({ npc, isNearby }) => {
         position: 'absolute',
         left: `${npc.x}px`,
         top: `${npc.y}px`,
+        transform: 'translate(-50%, -100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -35,8 +37,11 @@ export const NPC: React.FC<NPCProps> = ({ npc, isNearby }) => {
       {/* Interaction prompt floating above */}
       {isNearby && (
         <div 
-          className="animate-float"
           style={{
+            position: 'absolute',
+            bottom: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
             backgroundColor: '#f59e0b',
             color: '#78350f',
             border: '2px solid #ffffff',
@@ -46,39 +51,39 @@ export const NPC: React.FC<NPCProps> = ({ npc, isNearby }) => {
             fontWeight: 800,
             boxShadow: '0 3px 6px rgba(0,0,0,0.25)',
             marginBottom: '4px',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none'
           }}
         >
           [E] Toca para hablar
         </div>
       )}
 
-      {/* NPC Sprite Avatar */}
+      {/* NPC Sprite Avatar without rigid border box */}
       <div 
         style={{
-          width: '46px',
-          height: '46px',
-          borderRadius: '50%',
-          backgroundColor: npc.color,
-          border: '3px solid #ffffff',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '26px'
+          filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.35))',
+          transition: 'transform 0.15s ease'
         }}
       >
-        <span>{npc.avatarIcon}</span>
+        {npc.spriteImage ? (
+          <PixelImage src={npc.spriteImage} alt={npc.name} width={22} height={44} />
+        ) : (
+          <span style={{ fontSize: '26px' }}>{npc.avatarIcon}</span>
+        )}
       </div>
 
       {/* Name Label */}
       <div style={{
-        marginTop: '3px',
+        marginTop: '2px',
         backgroundColor: 'rgba(15, 23, 42, 0.85)',
         color: '#ffffff',
-        padding: '2px 8px',
-        borderRadius: '8px',
-        fontSize: '11px',
+        padding: '1px 6px',
+        borderRadius: '6px',
+        fontSize: '10px',
         fontWeight: 700,
         whiteSpace: 'nowrap',
         boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
