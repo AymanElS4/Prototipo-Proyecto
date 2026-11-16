@@ -10,13 +10,22 @@ interface NPCProps {
 }
 
 export const NPC: React.FC<NPCProps> = ({ npc, isNearby }) => {
-  const { openDialogue } = useQuest();
+  const { openDialogue, quest } = useQuest();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     try { sfx.playClick(); } catch {}
     openDialogue(npc.id);
   };
+
+  const getQuestBadge = () => {
+    if (isNearby) return null;
+    if (npc.id === 'john' && quest.status === 'in_progress') return '💬';
+    if (npc.id === 'mateo' && (quest.status === 'completed' || quest.currentStepIndex >= 4)) return '🗝️';
+    return null;
+  };
+
+  const questBadge = getQuestBadge();
 
   return (
     <div
@@ -35,7 +44,7 @@ export const NPC: React.FC<NPCProps> = ({ npc, isNearby }) => {
       }}
     >
       {/* Interaction prompt floating above */}
-      {isNearby && (
+      {isNearby ? (
         <div 
           style={{
             position: 'absolute',
@@ -57,7 +66,26 @@ export const NPC: React.FC<NPCProps> = ({ npc, isNearby }) => {
         >
           [E] Toca para hablar
         </div>
-      )}
+      ) : questBadge ? (
+        <div 
+          className="animate-float"
+          style={{
+            backgroundColor: '#ffffff',
+            border: '2px solid #f59e0b',
+            borderRadius: '50%',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            marginBottom: '3px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+        >
+          {questBadge}
+        </div>
+      ) : null}
 
       {/* NPC Sprite Avatar without rigid border box */}
       <div 
