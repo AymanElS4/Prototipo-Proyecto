@@ -158,6 +158,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('rpg_player');
       localStorage.removeItem('rpg_quest');
       localStorage.removeItem('rpg_history');
+      localStorage.removeItem('rpg_avatar_customized');
     } catch {}
     setModules(MODULES_DATA);
     setHistory([]);

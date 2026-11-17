@@ -88,6 +88,7 @@ export const AvatarCustomizer: React.FC = () => {
   const handleSave = () => {
     sfx.playSuccess();
     updateCustomization({ name: name.trim() || 'Guía Inti' });
+    localStorage.setItem('rpg_avatar_customized', 'true');
     setScreen('main_menu');
   };
 

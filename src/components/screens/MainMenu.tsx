@@ -10,7 +10,8 @@ export const MainMenu: React.FC = () => {
 
   const handleStartGame = () => {
     try { sfx.playClick(); } catch {}
-    setScreen('world_map');
+    const hasCustomizedAvatar = localStorage.getItem('rpg_avatar_customized') === 'true';
+    setScreen(hasCustomizedAvatar ? 'world_map' : 'customizer');
   };
 
   const handleToggleSound = () => {
