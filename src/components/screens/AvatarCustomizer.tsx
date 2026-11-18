@@ -4,6 +4,32 @@ import { usePlayer } from '../../context/PlayerContext';
 import { ArrowLeft, Check, Lock } from 'lucide-react';
 import { sfx } from '../../utils/audioSynthesis';
 
+const GorraIcon: React.FC<{ size: number; style?: React.CSSProperties }> = ({ size, style }) => (
+  <svg
+    viewBox="0 0 100 72"
+    width={size}
+    height={size * 0.72}
+    aria-hidden="true"
+    style={style}
+  >
+    <path
+      d="M16 49C18 27 35 11 56 11c17 0 28 13 30 34l9 4c-16 11-51 16-70 9-6-2-9-5-9-9Z"
+      fill="#315f83"
+      stroke="#263b4a"
+      strokeWidth="4"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M17 49c24-9 51-8 70-3l8 3c-13 13-47 18-68 12-7-2-11-6-10-12Z"
+      fill="#244960"
+      stroke="#263b4a"
+      strokeWidth="4"
+      strokeLinejoin="round"
+    />
+    <path d="M56 13c-8 11-11 24-10 39" fill="none" stroke="#7397a8" strokeWidth="3" />
+  </svg>
+);
+
 export const AvatarCustomizer: React.FC = () => {
   const { setScreen } = useGame();
   const { player, updateCustomization, hasItem } = usePlayer();
@@ -43,7 +69,7 @@ export const AvatarCustomizer: React.FC = () => {
     {
       id: 'montera' as const,
       name: 'Montera Cusqueña',
-      img: '/assets/avatar_customizer/montera_clean.png',
+      img: '/assets/avatar_customizer/montera_hat_sin_fondo.webp',
       locked: false
     },
     {
@@ -85,6 +111,20 @@ export const AvatarCustomizer: React.FC = () => {
     { id: 'sunglasses' as const, name: 'Lentes de Sol', icon: '🕶️' }
   ];
 
+  const inventoryFrameStyle: React.CSSProperties = {
+    backgroundImage: "url('/assets/avatar_customizer/cuadrodeobjeto_sin_fondo.webp')",
+    backgroundSize: '100% 100%',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+  const emptyInventorySlotStyle: React.CSSProperties = {
+    aspectRatio: '1',
+    ...inventoryFrameStyle,
+    backgroundColor: 'rgba(170, 190, 191, 0.5)',
+    border: 'none',
+    borderRadius: '10px'
+  };
+
   const handleSave = () => {
     sfx.playSuccess();
     updateCustomization({ name: name.trim() || 'Guía Inti' });
@@ -96,50 +136,54 @@ export const AvatarCustomizer: React.FC = () => {
     <div style={{
       width: '100%',
       height: '100%',
-      backgroundImage: 'url(/assets/menu_theme/main_bg.jpg)',
+      backgroundImage: 'url(/assets/fondocaracteres.jpeg)',
       backgroundSize: 'cover',
       backgroundPosition: 'center top',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
-      color: '#ffffff'
+      color: '#ffffff',
+      border: '4px solid #484438',
+      boxSizing: 'border-box'
     }}>
-      {/* Dark overlay backdrop */}
+      {/* Keep the scenery bright, like the reference layout. */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.4)',
-        backdropFilter: 'blur(2px)',
+        backgroundColor: 'rgba(15, 23, 42, 0.08)',
         zIndex: 1
       }} />
 
       {/* Top Header Bar (Organizado y sin choques) */}
       <div style={{
-        position: 'relative',
+        position: 'absolute',
         zIndex: 20,
-        padding: '12px 14px',
+        top: '10px',
+        left: '12px',
+        right: '12px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '8px'
+        gap: '6px'
       }}>
         {/* Back Button */}
         <button
+          aria-label="Volver"
           onClick={() => {
             sfx.playClick();
             setScreen('main_menu');
           }}
           className="stone-btn"
           style={{
-            padding: '7px 12px',
-            fontSize: '11px',
-            borderRadius: '10px',
+            width: '42px',
+            height: '42px',
+            padding: '0',
+            borderRadius: '50%',
             flexShrink: 0
           }}
         >
           <ArrowLeft size={16} />
-          <span>Volver</span>
         </button>
 
         {/* Name input pill */}
@@ -158,7 +202,8 @@ export const AvatarCustomizer: React.FC = () => {
             color: '#2b261f',
             textAlign: 'center',
             flex: 1,
-            maxWidth: '160px',
+            maxWidth: '136px',
+            minWidth: 0,
             outline: 'none',
             boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
           }}
@@ -166,17 +211,18 @@ export const AvatarCustomizer: React.FC = () => {
 
         {/* Save Confirmation Button */}
         <button
+          aria-label="Guardar personalización"
           onClick={handleSave}
           className="stone-btn stone-btn-green"
           style={{
-            padding: '7px 12px',
-            fontSize: '11px',
-            borderRadius: '10px',
+            width: '42px',
+            height: '42px',
+            padding: '0',
+            borderRadius: '50%',
             flexShrink: 0
           }}
         >
           <Check size={16} />
-          <span>Guardar</span>
         </button>
       </div>
 
@@ -185,55 +231,54 @@ export const AvatarCustomizer: React.FC = () => {
         position: 'relative',
         zIndex: 10,
         flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px 10px 0 10px'
+        minHeight: 0
       }}>
         {/* Orbit of Round Category Buttons */}
         <div style={{
-          position: 'relative',
-          width: '290px',
-          height: '260px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          position: 'absolute',
+          top: '9%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'min(94vw, 330px)',
+          height: 'min(60vh, 450px)'
         }}>
           {/* Character Illustration Base */}
           <div style={{
-            position: 'relative',
-            width: '180px',
-            height: '220px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            zIndex: 5
+            position: 'absolute',
+            left: '50%',
+            bottom: 0,
+            transform: 'translateX(-50%)',
+            width: 'min(78vw, 260px)',
+            height: 'min(42vh, 230px)',
+            overflow: 'visible',
+            zIndex: 5,
+            pointerEvents: 'none'
           }}>
-            {/* Base Portrait Image from uploaded design */}
-            <img
-              src="/assets/avatar_customizer/character_portrait.png"
-              alt="Guía Turístico"
-              style={{
-                width: '150px',
-                height: 'auto',
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.6))'
-              }}
-            />
+            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+              <img
+                src="/assets/avatar_customizer/personaje_sin_fondo.webp"
+                alt="Guía Turístico"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '10%',
+                  width: '80%',
+                  height: 'auto'
+                }}
+              />
+            </div>
 
             {/* Hat Layer Rendered on Head */}
             {player.customization.hat === 'montera' && (
               <img
-                src="/assets/avatar_customizer/montera_head_clean.png"
-                alt="Montera"
+                src="/assets/avatar_customizer/montera_hat_sin_fondo.webp"
+                alt="Montera Cusqueña"
                 style={{
                   position: 'absolute',
-                  top: '18px',
+                  top: '-10%',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  width: '95px',
+                  width: '42%',
                   height: 'auto',
                   zIndex: 8,
                   filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))'
@@ -241,24 +286,34 @@ export const AvatarCustomizer: React.FC = () => {
               />
             )}
             {player.customization.hat === 'chullo' && (
-              <span style={{ position: 'absolute', top: '16px', fontSize: '42px', zIndex: 8, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5))' }}>🧶</span>
+              <span style={{ position: 'absolute', top: '-12%', left: '50%', transform: 'translateX(-50%)', fontSize: '42px', zIndex: 8, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5))' }}>🧶</span>
             )}
             {player.customization.hat === 'sombrero' && (
-              <span style={{ position: 'absolute', top: '16px', fontSize: '42px', zIndex: 8, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5))' }}>👒</span>
+              <span style={{ position: 'absolute', top: '-12%', left: '50%', transform: 'translateX(-50%)', fontSize: '42px', zIndex: 8, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5))' }}>👒</span>
             )}
             {player.customization.hat === 'gorra' && (
-              <span style={{ position: 'absolute', top: '18px', fontSize: '42px', zIndex: 8, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5))' }}>🧢</span>
+              <GorraIcon
+                size={122}
+                style={{
+                  position: 'absolute',
+                  top: '-14%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 8,
+                  filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.45))'
+                }}
+              />
             )}
             {player.customization.hat === 'chullo_dorado' && (
-              <span style={{ position: 'absolute', top: '12px', fontSize: '46px', zIndex: 8, filter: 'drop-shadow(0 4px 8px rgba(245,158,11,0.6))' }}>👑</span>
+              <span style={{ position: 'absolute', top: '-14%', left: '50%', transform: 'translateX(-50%)', fontSize: '46px', zIndex: 8, filter: 'drop-shadow(0 4px 8px rgba(245,158,11,0.6))' }}>👑</span>
             )}
 
             {/* Glasses Layer */}
             {player.customization.glasses === 'classic' && (
-              <span style={{ position: 'absolute', top: '78px', fontSize: '24px', zIndex: 9 }}>👓</span>
+              <span style={{ position: 'absolute', top: '34%', left: '50%', transform: 'translateX(-50%)', fontSize: '24px', zIndex: 9 }}>👓</span>
             )}
             {player.customization.glasses === 'sunglasses' && (
-              <span style={{ position: 'absolute', top: '78px', fontSize: '24px', zIndex: 9 }}>🕶️</span>
+              <span style={{ position: 'absolute', top: '34%', left: '50%', transform: 'translateX(-50%)', fontSize: '24px', zIndex: 9 }}>🕶️</span>
             )}
           </div>
 
@@ -271,18 +326,19 @@ export const AvatarCustomizer: React.FC = () => {
             title="Tono de Piel"
             style={{
               position: 'absolute',
-              top: '80px',
-              left: '6px',
-              width: '44px',
-              height: '44px',
+              top: '110px',
+              left: '4%',
+              width: '50px',
+              height: '50px',
               borderRadius: '50%',
-              backgroundColor: activeCategory === 'skin' ? '#fef3c7' : 'rgba(235, 230, 219, 0.95)',
+              backgroundColor: '#d3cbbb',
               border: activeCategory === 'skin' ? '3px solid #f59e0b' : '2px solid #5a5245',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
+              boxShadow: 'none',
+              overflow: 'hidden',
               zIndex: 12
             }}
           >
@@ -304,23 +360,24 @@ export const AvatarCustomizer: React.FC = () => {
             title="Vestimenta / Camiseta"
             style={{
               position: 'absolute',
-              top: '28px',
-              left: '28px',
-              width: '44px',
-              height: '44px',
+              top: '42px',
+              left: '20%',
+              width: '50px',
+              height: '50px',
               borderRadius: '50%',
-              backgroundColor: activeCategory === 'shirt' ? '#fef3c7' : 'rgba(235, 230, 219, 0.95)',
-              border: activeCategory === 'shirt' ? '3px solid #f59e0b' : '2px solid #5a5245',
+              backgroundColor: 'transparent',
+              border: activeCategory === 'shirt' ? '2px solid #f59e0b' : '2px solid transparent',
+              overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
-              fontSize: '18px',
+              boxShadow: 'none',
+              padding: '0',
               zIndex: 12
             }}
           >
-            👕
+            <img src="/assets/avatar_customizer/cat_shirt_sin_fondo.webp" alt="" style={{ width: '46px', height: '46px' }} />
           </button>
 
           {/* 3. Category Button: Hat / Montera (Top Center) */}
@@ -332,27 +389,28 @@ export const AvatarCustomizer: React.FC = () => {
             title="Sombreros y Monteras"
             style={{
               position: 'absolute',
-              top: '8px',
+              top: '18px',
               left: '50%',
               transform: 'translateX(-50%)',
-              width: '48px',
-              height: '48px',
+              width: '50px',
+              height: '50px',
               borderRadius: '50%',
-              backgroundColor: activeCategory === 'hat' ? '#fef3c7' : 'rgba(235, 230, 219, 0.95)',
-              border: activeCategory === 'hat' ? '3px solid #f59e0b' : '2px solid #5a5245',
+              backgroundColor: 'transparent',
+              border: activeCategory === 'hat' ? '2px solid #f59e0b' : '2px solid transparent',
+              overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
-              padding: '4px',
+              boxShadow: 'none',
+              padding: '0',
               zIndex: 15
             }}
           >
             <img
-              src="/assets/avatar_customizer/montera_clean.png"
-              alt="Hat"
-              style={{ width: '32px', height: 'auto', objectFit: 'contain' }}
+              src="/assets/avatar_customizer/cat_hat_sin_fondo.webp"
+              alt=""
+              style={{ width: '46px', height: '46px', objectFit: 'contain' }}
             />
           </button>
 
@@ -365,23 +423,24 @@ export const AvatarCustomizer: React.FC = () => {
             title="Pantalón"
             style={{
               position: 'absolute',
-              top: '12px',
-              right: '38px',
-              width: '44px',
-              height: '44px',
+              top: '42px',
+              right: '20%',
+              width: '50px',
+              height: '50px',
               borderRadius: '50%',
-              backgroundColor: activeCategory === 'pants' ? '#fef3c7' : 'rgba(235, 230, 219, 0.95)',
-              border: activeCategory === 'pants' ? '3px solid #f59e0b' : '2px solid #5a5245',
+              backgroundColor: 'transparent',
+              border: activeCategory === 'pants' ? '2px solid #f59e0b' : '2px solid transparent',
+              overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
-              fontSize: '18px',
+              boxShadow: 'none',
+              padding: '0',
               zIndex: 12
             }}
           >
-            👖
+            <img src="/assets/avatar_customizer/cat_pants_sin_fondo.webp" alt="" style={{ width: '46px', height: '46px' }} />
           </button>
 
           {/* 5. Category Button: Glasses (Right) */}
@@ -393,23 +452,24 @@ export const AvatarCustomizer: React.FC = () => {
             title="Lentes y Accesorios"
             style={{
               position: 'absolute',
-              top: '80px',
-              right: '6px',
-              width: '44px',
-              height: '44px',
+              top: '110px',
+              right: '4%',
+              width: '50px',
+              height: '50px',
               borderRadius: '50%',
-              backgroundColor: activeCategory === 'glasses' ? '#fef3c7' : 'rgba(235, 230, 219, 0.95)',
-              border: activeCategory === 'glasses' ? '3px solid #f59e0b' : '2px solid #5a5245',
+              backgroundColor: 'transparent',
+              border: activeCategory === 'glasses' ? '2px solid #f59e0b' : '2px solid transparent',
+              overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
-              fontSize: '18px',
+              boxShadow: 'none',
+              padding: '0',
               zIndex: 12
             }}
           >
-            👓
+            <img src="/assets/avatar_customizer/cat_glasses_sin_fondo.webp" alt="" style={{ width: '46px', height: '46px' }} />
           </button>
         </div>
       </div>
@@ -418,36 +478,25 @@ export const AvatarCustomizer: React.FC = () => {
       <div style={{
         position: 'relative',
         zIndex: 10,
-        backgroundColor: 'rgba(15, 23, 42, 0.88)',
-        borderTop: '3px solid #5a5245',
-        padding: '12px 14px 18px 14px',
+        backgroundColor: 'rgba(112, 145, 151, 0.62)',
+        borderTop: 'none',
+        padding: '10px 12px 12px',
+        height: '32%',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '6px'
+        gap: '0'
       }}>
-        {/* Category Description */}
-        <div style={{
-          fontSize: '11px',
-          fontWeight: 900,
-          color: '#fbbf24',
-          textTransform: 'uppercase',
-          letterSpacing: '0.8px'
-        }}>
-          {activeCategory === 'hat' && 'Seleccionar Sombrero o Montera'}
-          {activeCategory === 'skin' && 'Seleccionar Tono de Piel'}
-          {activeCategory === 'shirt' && 'Seleccionar Color de Prenda'}
-          {activeCategory === 'pants' && 'Seleccionar Color de Pantalón'}
-          {activeCategory === 'glasses' && 'Seleccionar Accesorios de Rostro'}
-        </div>
-
         {/* 4x3 Slot Grid */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '7px',
+          gap: '4px',
           width: '100%',
-          maxWidth: '330px'
+          maxWidth: '270px'
         }}>
           {activeCategory === 'hat' && (
             <>
@@ -466,9 +515,10 @@ export const AvatarCustomizer: React.FC = () => {
                     }}
                     style={{
                       aspectRatio: '1',
-                      backgroundColor: isSelected ? 'rgba(254, 243, 199, 0.95)' : 'rgba(71, 85, 105, 0.45)',
-                      border: isSelected ? '3px solid #f59e0b' : '2px solid #64748b',
-                      borderRadius: '12px',
+                      ...inventoryFrameStyle,
+                      backgroundColor: isSelected ? 'rgba(246, 221, 175, 0.65)' : 'rgba(170, 190, 191, 0.5)',
+                      border: isSelected ? '3px solid #f59e0b' : 'none',
+                      borderRadius: '10px',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -476,13 +526,19 @@ export const AvatarCustomizer: React.FC = () => {
                       cursor: item.locked ? 'not-allowed' : 'pointer',
                       opacity: item.locked ? 0.4 : 1,
                       position: 'relative',
-                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
-                      padding: '4px'
+                      boxShadow: 'none',
+                      padding: '3px'
                     }}
                     title={item.name}
                   >
                     {item.img ? (
-                      <img src={item.img} alt={item.name} style={{ width: '40px', height: 'auto', objectFit: 'contain' }} />
+                      <img
+                        src={item.img}
+                        alt={item.name}
+                        style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                      />
+                    ) : item.id === 'gorra' ? (
+                      <GorraIcon size={38} />
                     ) : (
                       <span style={{ fontSize: '22px' }}>{item.icon}</span>
                     )}
@@ -497,12 +553,7 @@ export const AvatarCustomizer: React.FC = () => {
               {Array.from({ length: 12 - hats.length }).map((_, idx) => (
                 <div
                   key={`empty-hat-${idx}`}
-                  style={{
-                    aspectRatio: '1',
-                    backgroundColor: 'rgba(30, 41, 59, 0.35)',
-                    border: '2px solid rgba(100, 116, 139, 0.3)',
-                    borderRadius: '12px'
-                  }}
+                  style={emptyInventorySlotStyle}
                 />
               ))}
             </>
@@ -522,14 +573,15 @@ export const AvatarCustomizer: React.FC = () => {
                     }}
                     style={{
                       aspectRatio: '1',
-                      backgroundColor: 'rgba(71, 85, 105, 0.45)',
-                      border: isSelected ? '3px solid #f59e0b' : '2px solid #64748b',
-                      borderRadius: '12px',
+                      ...inventoryFrameStyle,
+                      backgroundColor: 'rgba(170, 190, 191, 0.5)',
+                      border: isSelected ? '3px solid #f59e0b' : 'none',
+                      borderRadius: '10px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                      boxShadow: 'none'
                     }}
                     title={item.label}
                   >
@@ -546,12 +598,7 @@ export const AvatarCustomizer: React.FC = () => {
               {Array.from({ length: 12 - skinTones.length }).map((_, idx) => (
                 <div
                   key={`empty-skin-${idx}`}
-                  style={{
-                    aspectRatio: '1',
-                    backgroundColor: 'rgba(30, 41, 59, 0.35)',
-                    border: '2px solid rgba(100, 116, 139, 0.3)',
-                    borderRadius: '12px'
-                  }}
+                  style={emptyInventorySlotStyle}
                 />
               ))}
             </>
@@ -571,14 +618,15 @@ export const AvatarCustomizer: React.FC = () => {
                     }}
                     style={{
                       aspectRatio: '1',
-                      backgroundColor: 'rgba(71, 85, 105, 0.45)',
-                      border: isSelected ? '3px solid #f59e0b' : '2px solid #64748b',
-                      borderRadius: '12px',
+                      ...inventoryFrameStyle,
+                      backgroundColor: 'rgba(170, 190, 191, 0.5)',
+                      border: isSelected ? '3px solid #f59e0b' : 'none',
+                      borderRadius: '10px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                      boxShadow: 'none'
                     }}
                     title={item.label}
                   >
@@ -595,12 +643,7 @@ export const AvatarCustomizer: React.FC = () => {
               {Array.from({ length: 12 - shirtColors.length }).map((_, idx) => (
                 <div
                   key={`empty-shirt-${idx}`}
-                  style={{
-                    aspectRatio: '1',
-                    backgroundColor: 'rgba(30, 41, 59, 0.35)',
-                    border: '2px solid rgba(100, 116, 139, 0.3)',
-                    borderRadius: '12px'
-                  }}
+                  style={emptyInventorySlotStyle}
                 />
               ))}
             </>
@@ -620,14 +663,15 @@ export const AvatarCustomizer: React.FC = () => {
                     }}
                     style={{
                       aspectRatio: '1',
-                      backgroundColor: 'rgba(71, 85, 105, 0.45)',
-                      border: isSelected ? '3px solid #f59e0b' : '2px solid #64748b',
-                      borderRadius: '12px',
+                      ...inventoryFrameStyle,
+                      backgroundColor: 'rgba(170, 190, 191, 0.5)',
+                      border: isSelected ? '3px solid #f59e0b' : 'none',
+                      borderRadius: '10px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                      boxShadow: 'none'
                     }}
                     title={item.label}
                   >
@@ -644,12 +688,7 @@ export const AvatarCustomizer: React.FC = () => {
               {Array.from({ length: 12 - pantsColors.length }).map((_, idx) => (
                 <div
                   key={`empty-pants-${idx}`}
-                  style={{
-                    aspectRatio: '1',
-                    backgroundColor: 'rgba(30, 41, 59, 0.35)',
-                    border: '2px solid rgba(100, 116, 139, 0.3)',
-                    borderRadius: '12px'
-                  }}
+                  style={emptyInventorySlotStyle}
                 />
               ))}
             </>
@@ -669,15 +708,16 @@ export const AvatarCustomizer: React.FC = () => {
                     }}
                     style={{
                       aspectRatio: '1',
-                      backgroundColor: isSelected ? 'rgba(254, 243, 199, 0.95)' : 'rgba(71, 85, 105, 0.45)',
-                      border: isSelected ? '3px solid #f59e0b' : '2px solid #64748b',
-                      borderRadius: '12px',
+                      ...inventoryFrameStyle,
+                      backgroundColor: isSelected ? 'rgba(246, 221, 175, 0.65)' : 'rgba(170, 190, 191, 0.5)',
+                      border: isSelected ? '3px solid #f59e0b' : 'none',
+                      borderRadius: '10px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: '22px',
                       cursor: 'pointer',
-                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                      boxShadow: 'none'
                     }}
                     title={item.name}
                   >
@@ -688,12 +728,7 @@ export const AvatarCustomizer: React.FC = () => {
               {Array.from({ length: 12 - glassesList.length }).map((_, idx) => (
                 <div
                   key={`empty-glasses-${idx}`}
-                  style={{
-                    aspectRatio: '1',
-                    backgroundColor: 'rgba(30, 41, 59, 0.35)',
-                    border: '2px solid rgba(100, 116, 139, 0.3)',
-                    borderRadius: '12px'
-                  }}
+                  style={emptyInventorySlotStyle}
                 />
               ))}
             </>
