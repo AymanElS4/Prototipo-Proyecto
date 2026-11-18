@@ -124,16 +124,21 @@ export const WordSearchModal: React.FC = () => {
   const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
     if (activePointerId.current !== event.pointerId || !selectionStart.current) return;
 
+    const start = selectionStart.current;
     const coordinate = getCoordinateFromElement(
       document.elementFromPoint(event.clientX, event.clientY)
     );
-    const line = coordinate ? createLine(selectionStart.current, coordinate) : selectedCoords;
     activePointerId.current = null;
     selectionStart.current = null;
 
-    const selection = line || selectedCoords;
-    if (selection.length === 0) return;
-    validateSelection(selection, Boolean(coordinate && !line));
+    if (!coordinate) {
+      setSelectedCoords([]);
+      setSelectionIsIncorrect(false);
+      return;
+    }
+
+    const line = createLine(start, coordinate);
+    validateSelection(line || selectedCoords, !line);
   };
 
   const handlePointerCancel = () => {
