@@ -1,13 +1,44 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useQuest } from '../../context/QuestContext';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { WORD_SEARCH_GRID, WORD_SEARCH_TARGETS, WORD_COORDINATES } from '../../data/wordSearchData';
-import { Check, X, RotateCcw, Volume2, Sparkles, HelpCircle } from 'lucide-react';
+import { Check, RotateCcw, Volume2 } from 'lucide-react';
 import { sfx } from '../../utils/audioSynthesis';
 import { speakEnglish } from '../../utils/speechSynth';
 import confetti from 'canvas-confetti';
 import { AIRPORT_ASSETS } from '../../utils/airportAssets';
+
+type Coordinate = [number, number];
+
+const getCoordinateFromElement = (element: EventTarget | Element | null): Coordinate | null => {
+  if (!(element instanceof Element)) return null;
+
+  const cell = element.closest<HTMLElement>('[data-word-cell]');
+  if (!cell) return null;
+
+  const row = Number(cell.dataset.row);
+  const column = Number(cell.dataset.column);
+  return Number.isInteger(row) && Number.isInteger(column) ? [row, column] : null;
+};
+
+const createLine = (start: Coordinate, end: Coordinate): Coordinate[] | null => {
+  const rowDifference = end[0] - start[0];
+  const columnDifference = end[1] - start[1];
+  const rowDistance = Math.abs(rowDifference);
+  const columnDistance = Math.abs(columnDifference);
+
+  if (rowDifference !== 0 && columnDifference !== 0 && rowDistance !== columnDistance) return null;
+
+  const steps = Math.max(rowDistance, columnDistance);
+  const rowStep = Math.sign(rowDifference);
+  const columnStep = Math.sign(columnDifference);
+
+  return Array.from({ length: steps + 1 }, (_, index) => [
+    start[0] + rowStep * index,
+    start[1] + columnStep * index
+  ]);
+};
 
 export const WordSearchModal: React.FC = () => {
   const { activeActivityModal, setActiveActivityModal, advanceQuestStep, openDialogue } = useQuest();
@@ -15,8 +46,11 @@ export const WordSearchModal: React.FC = () => {
   const { addXp, addCoins, unlockBadge } = usePlayer();
 
   const [foundWords, setFoundWords] = useState<string[]>([]);
-  const [selectedCoords, setSelectedCoords] = useState<[number, number][]>([]);
+  const [selectedCoords, setSelectedCoords] = useState<Coordinate[]>([]);
+  const [selectionIsIncorrect, setSelectionIsIncorrect] = useState(false);
   const [mistakes, setMistakes] = useState<number>(0);
+  const activePointerId = useRef<number | null>(null);
+  const selectionStart = useRef<Coordinate | null>(null);
 
   if (activeActivityModal !== 'word_search') return null;
 
@@ -31,37 +65,87 @@ export const WordSearchModal: React.FC = () => {
     });
   };
 
-  const handleCellClick = (r: number, c: number) => {
-    try { sfx.playClick(); } catch {}
-    const isAlready = isCoordSelected(r, c);
-    let nextCoords: [number, number][];
-
-    if (isAlready) {
-      nextCoords = selectedCoords.filter(([row, col]) => !(row === r && col === c));
-    } else {
-      nextCoords = [...selectedCoords, [r, c]];
-    }
-    setSelectedCoords(nextCoords);
-
-    const formedWord = nextCoords.map(([row, col]) => WORD_SEARCH_GRID[row][col]).join('');
-
-    const matchedTarget = WORD_SEARCH_TARGETS.find(t => 
-      !foundWords.includes(t.word) && (t.word === formedWord || t.word === formedWord.split('').reverse().join(''))
+  const validateSelection = (coordinates: Coordinate[], invalidDirection = false) => {
+    const formed = coordinates.map(([row, column]) => WORD_SEARCH_GRID[row][column]).join('');
+    const reversed = formed.split('').reverse().join('');
+    const matched = WORD_SEARCH_TARGETS.find(target =>
+      !foundWords.includes(target.word) &&
+      (target.word === formed || target.word === reversed)
     );
 
-    if (matchedTarget) {
-      handleWordFound(matchedTarget.word);
+    if (matched && !invalidDirection) {
+      handleWordFound(matched.word);
+      return;
     }
+
+    setSelectedCoords(coordinates);
+    setSelectionIsIncorrect(true);
+    setMistakes(previous => previous + 1);
+    showFeedback({
+      title: '¡Inténtalo de nuevo! / Try Again!',
+      message: invalidDirection
+        ? 'La selección debe seguir una línea recta para formar una palabra.'
+        : `Las letras seleccionadas ("${formed}") no corresponden a ninguna de las palabras pendientes de la lista.`,
+      isSuccess: false,
+      tip: 'Desliza en línea recta, en horizontal, vertical o diagonal, siguiendo las letras de una palabra.',
+      onRetry: () => {
+        setSelectedCoords([]);
+        setSelectionIsIncorrect(false);
+      }
+    });
   };
 
-  const handleDirectSelect = (word: string) => {
-    if (foundWords.includes(word)) return;
-    try { sfx.playDialogueBlip(); } catch {}
-    const coords = WORD_COORDINATES[word];
-    if (coords) {
-      setSelectedCoords(coords);
-      handleWordFound(word);
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!event.isPrimary || event.button !== 0) return;
+
+    const coordinate = getCoordinateFromElement(event.target);
+    if (!coordinate) return;
+
+    event.preventDefault();
+    activePointerId.current = event.pointerId;
+    selectionStart.current = coordinate;
+    setSelectionIsIncorrect(false);
+    setSelectedCoords([coordinate]);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== event.pointerId || !selectionStart.current) return;
+
+    const coordinate = getCoordinateFromElement(
+      document.elementFromPoint(event.clientX, event.clientY)
+    );
+    if (!coordinate) return;
+
+    const line = createLine(selectionStart.current, coordinate);
+    if (line) setSelectedCoords(line);
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== event.pointerId || !selectionStart.current) return;
+
+    const start = selectionStart.current;
+    const coordinate = getCoordinateFromElement(
+      document.elementFromPoint(event.clientX, event.clientY)
+    );
+    activePointerId.current = null;
+    selectionStart.current = null;
+
+    if (!coordinate) {
+      setSelectedCoords([]);
+      setSelectionIsIncorrect(false);
+      return;
     }
+
+    const line = createLine(start, coordinate);
+    validateSelection(line || selectedCoords, !line);
+  };
+
+  const handlePointerCancel = () => {
+    activePointerId.current = null;
+    selectionStart.current = null;
+    setSelectedCoords([]);
+    setSelectionIsIncorrect(false);
   };
 
   const handleWordFound = (word: string) => {
@@ -121,28 +205,6 @@ export const WordSearchModal: React.FC = () => {
         openDialogue('john', 'word_search_done');
       }
     });
-  };
-
-  const handleVerifySelection = () => {
-    if (selectedCoords.length === 0) return;
-    const formed = selectedCoords.map(([r, c]) => WORD_SEARCH_GRID[r][c]).join('');
-    const matched = WORD_SEARCH_TARGETS.find(t => 
-      !foundWords.includes(t.word) && (t.word === formed || t.word === formed.split('').reverse().join(''))
-    );
-
-    if (matched) {
-      handleWordFound(matched.word);
-    } else {
-      try { sfx.playError(); } catch {}
-      setMistakes(prev => prev + 1);
-      showFeedback({
-        title: '¡Inténtalo de nuevo! / Try Again!',
-        message: `Las letras seleccionadas ("${formed}") no corresponden a ninguna de las palabras pendientes de la lista.`,
-        isSuccess: false,
-        tip: 'Observa bien las tarjetas inferiores. Puedes buscar en horizontal o vertical.'
-      });
-      setSelectedCoords([]);
-    }
   };
 
   return (
@@ -230,7 +292,12 @@ export const WordSearchModal: React.FC = () => {
         </div>
 
         {/* Word Search Grid (8x8) */}
-        <div style={{
+        <div
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+          style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(8, 1fr)',
           gap: '5px',
@@ -238,7 +305,9 @@ export const WordSearchModal: React.FC = () => {
           padding: '10px',
           borderRadius: '12px',
           border: '3px solid #b45309',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+          touchAction: 'none',
+          userSelect: 'none'
         }}>
           {WORD_SEARCH_GRID.map((row, rIdx) => 
             row.map((letter, cIdx) => {
@@ -254,15 +323,19 @@ export const WordSearchModal: React.FC = () => {
                 textColor = '#14532d';
                 borderColor = '#16a34a';
               } else if (selected) {
-                bgColor = '#fde047';
-                textColor = '#78350f';
-                borderColor = '#ca8a04';
+                bgColor = selectionIsIncorrect ? '#fecaca' : '#e5e7eb';
+                textColor = selectionIsIncorrect ? '#991b1b' : '#374151';
+                borderColor = selectionIsIncorrect ? '#dc2626' : '#9ca3af';
               }
 
               return (
                 <button
                   key={`${rIdx}-${cIdx}`}
-                  onClick={() => handleCellClick(rIdx, cIdx)}
+                  data-word-cell
+                  data-row={rIdx}
+                  data-column={cIdx}
+                  aria-label={`Fila ${rIdx + 1}, columna ${cIdx + 1}: ${letter}`}
+                  type="button"
                   style={{
                     aspectRatio: '1',
                     borderRadius: '8px',
@@ -311,27 +384,16 @@ export const WordSearchModal: React.FC = () => {
               <span>Selección: {selectedCoords.map(([r, c]) => WORD_SEARCH_GRID[r][c]).join('')}</span>
             ) : (
               <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '11px' }}>
-                Toca letras en la cuadrícula o toca una palabra
+                Desliza desde una letra hasta el final de una palabra
               </span>
             )}
           </div>
 
           <button
-            onClick={handleVerifySelection}
-            disabled={selectedCoords.length === 0}
-            className="rpg-btn rpg-btn-green"
-            style={{
-              padding: '6px 12px',
-              fontSize: '12px',
-              opacity: selectedCoords.length === 0 ? 0.5 : 1
+            onClick={() => {
+              setSelectedCoords([]);
+              setSelectionIsIncorrect(false);
             }}
-          >
-            <Check size={14} />
-            <span>Validar</span>
-          </button>
-
-          <button
-            onClick={() => setSelectedCoords([])}
             disabled={selectedCoords.length === 0}
             className="rpg-btn rpg-btn-secondary"
             style={{ padding: '6px 8px' }}
@@ -355,7 +417,6 @@ export const WordSearchModal: React.FC = () => {
             return (
               <div
                 key={target.id}
-                onClick={() => handleDirectSelect(target.word)}
                 style={{
                   padding: '6px 8px',
                   borderRadius: '8px',
@@ -365,7 +426,6 @@ export const WordSearchModal: React.FC = () => {
                   alignItems: 'center',
                   gap: '8px',
                   position: 'relative',
-                  cursor: 'pointer',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.06)'
                 }}
               >

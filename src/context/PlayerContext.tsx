@@ -44,6 +44,9 @@ const DEFAULT_PLAYER: PlayerState = {
   completedActivities: []
 };
 
+const isPlayerDirection = (direction: unknown): direction is PlayerState['direction'] =>
+  direction === 'up' || direction === 'down' || direction === 'left' || direction === 'right';
+
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -53,7 +56,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.customization && parsed.inventory) {
-          return { ...DEFAULT_PLAYER, ...parsed };
+          return {
+            ...DEFAULT_PLAYER,
+            ...parsed,
+            direction: isPlayerDirection(parsed.direction) ? parsed.direction : DEFAULT_PLAYER.direction
+          };
         }
       }
     } catch {}

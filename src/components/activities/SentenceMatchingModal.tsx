@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuest } from '../../context/QuestContext';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
@@ -69,6 +69,29 @@ const COL_PLACES = [
   { id: 'hotel', text: 'hotel', icon: '🏨' }
 ];
 
+type MatchColumn = 0 | 1 | 2;
+type MatchOption = { id: string; column: MatchColumn };
+
+const getMatchOptionFromElement = (element: EventTarget | Element | null): MatchOption | null => {
+  if (!(element instanceof Element)) return null;
+
+  const option = element.closest<HTMLElement>('[data-match-option]');
+  if (!option) return null;
+
+  const rawColumn = option.dataset.matchColumn;
+  const column: MatchColumn | null = rawColumn === '0'
+    ? 0
+    : rawColumn === '1'
+      ? 1
+      : rawColumn === '2'
+        ? 2
+        : null;
+  const id = option.dataset.matchId;
+  if (!id || column === null) return null;
+
+  return { id, column };
+};
+
 export const SentenceMatchingModal: React.FC = () => {
   const { activeActivityModal, setActiveActivityModal, advanceQuestStep, openDialogue } = useQuest();
   const { showFeedback, addHistoryRecord } = useGame();
@@ -76,9 +99,20 @@ export const SentenceMatchingModal: React.FC = () => {
 
   const [showIntroScreen, setShowIntroScreen] = useState(false);
   const [completedTripletIds, setCompletedTripletIds] = useState<string[]>([]);
-  const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
-  const [selectedProfession, setSelectedProfession] = useState<string | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
+  const [activePath, setActivePath] = useState<MatchOption[]>([]);
+  const [activePathIsInvalid, setActivePathIsInvalid] = useState(false);
+  const [, setLayoutVersion] = useState(0);
+  const activePointerId = useRef<number | null>(null);
+  const dragPath = useRef<MatchOption[]>([]);
+  const dragIsInvalid = useRef(false);
+  const matchingGridRef = useRef<HTMLDivElement>(null);
+  const optionRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  useEffect(() => {
+    const updateLayout = () => setLayoutVersion(version => version + 1);
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
 
   if (activeActivityModal !== 'sentence_matching') return null;
 
@@ -103,42 +137,118 @@ export const SentenceMatchingModal: React.FC = () => {
     });
   };
 
-  const handleSelectFamily = (id: string) => {
-    if (isFamilyCompleted(id)) return;
-    try { sfx.playClick(); } catch {}
-    setSelectedFamily(id);
+  const clearActivePath = () => {
+    activePointerId.current = null;
+    dragPath.current = [];
+    dragIsInvalid.current = false;
+    setActivePath([]);
+    setActivePathIsInvalid(false);
   };
 
-  const handleSelectProfession = (id: string) => {
-    if (isProfessionCompleted(id)) return;
-    try { sfx.playClick(); } catch {}
-    if (!selectedFamily) {
-      showFeedback({
-        title: '¡Inténtalo de nuevo! / Try Again!',
-        message: 'Primero selecciona un miembro de la familia en la Columna Izquierda (my uncle, my aunt o my cousin).',
-        isSuccess: false,
-        tip: 'Sigue el orden de asociación: Personaje ➡️ Ocupación/Uniforme ➡️ Lugar de trabajo.'
-      });
-      return;
-    }
-    setSelectedProfession(id);
+  const isOptionCompleted = ({ id, column }: MatchOption) => {
+    if (column === 0) return isFamilyCompleted(id);
+    if (column === 1) return isProfessionCompleted(id);
+    return isPlaceCompleted(id);
   };
 
-  const handleSelectPlace = (id: string) => {
-    if (isPlaceCompleted(id)) return;
-    try { sfx.playClick(); } catch {}
-    if (!selectedFamily || !selectedProfession) {
-      showFeedback({
-        title: '¡Inténtalo de nuevo! / Try Again!',
-        message: 'Debes seleccionar primero el personaje y su distintivo antes de conectar el lugar de trabajo.',
-        isSuccess: false,
-        tip: 'Ejemplo: my uncle ➡️ police officer ➡️ police station.'
-      });
+  const updateDragPath = (option: MatchOption | null) => {
+    if (!option || dragIsInvalid.current) return;
+    if (isOptionCompleted(option)) return;
+
+    const previous = dragPath.current[dragPath.current.length - 1];
+    if (!previous || previous.id === option.id) return;
+    if (option.column === previous.column) return;
+    if (option.column !== previous.column + 1) {
+      dragIsInvalid.current = true;
+      setActivePathIsInvalid(true);
       return;
     }
 
-    setSelectedPlace(id);
-    validateSelection(selectedFamily, selectedProfession, id);
+    const nextPath = [...dragPath.current, option];
+    dragPath.current = nextPath;
+    setActivePath(nextPath);
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!event.isPrimary || event.button !== 0) return;
+
+    const option = getMatchOptionFromElement(event.target);
+    if (option?.column !== 0 || isOptionCompleted(option)) return;
+
+    event.preventDefault();
+    activePointerId.current = event.pointerId;
+    dragPath.current = [option];
+    dragIsInvalid.current = false;
+    setActivePath([option]);
+    setActivePathIsInvalid(false);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== event.pointerId) return;
+
+    updateDragPath(getMatchOptionFromElement(
+      document.elementFromPoint(event.clientX, event.clientY)
+    ));
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== event.pointerId) return;
+
+    const releaseOption = getMatchOptionFromElement(
+      document.elementFromPoint(event.clientX, event.clientY)
+    );
+    updateDragPath(releaseOption);
+    activePointerId.current = null;
+
+    const lastOption = dragPath.current[dragPath.current.length - 1];
+    const finishedOnSameColumn = releaseOption && !isOptionCompleted(releaseOption) && lastOption &&
+      releaseOption.column === lastOption.column &&
+      !(dragPath.current.length === 3 && releaseOption.id === lastOption.id);
+    if (finishedOnSameColumn) dragIsInvalid.current = true;
+
+    if (dragIsInvalid.current) {
+      setActivePathIsInvalid(true);
+      showFeedback({
+        title: '¡Inténtalo de nuevo! / Try Again!',
+        message: 'Puedes pasar sobre otros elementos de una columna, pero suelta el dedo en la siguiente columna para continuar la conexión.',
+        isSuccess: false,
+        tip: 'Sigue el orden: personaje → ocupación → lugar.',
+        onRetry: clearActivePath
+      });
+      return;
+    }
+
+    const [family, profession, place] = dragPath.current;
+    if (!family || !profession || !place) {
+      clearActivePath();
+      return;
+    }
+
+    validateSelection(family.id, profession.id, place.id);
+  };
+
+  const handlePointerCancel = () => clearActivePath();
+
+  const getLinePoints = (options: MatchOption[]) => {
+    const grid = matchingGridRef.current;
+    if (!grid || options.length < 2) return null;
+
+    const gridRect = grid.getBoundingClientRect();
+    const points = options.map(option => {
+      const element = optionRefs.current[option.id];
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return `${rect.left + rect.width / 2 - gridRect.left},${rect.top + rect.height / 2 - gridRect.top}`;
+    });
+
+    return points.every((point): point is string => point !== null) ? points.join(' ') : null;
+  };
+
+  const getOptionText = ({ id, column }: MatchOption) => {
+    if (column === 0) return COL_FAMILY.find(item => item.id === id)?.text;
+    if (column === 1) return COL_PROFESSIONS.find(item => item.id === id)?.text;
+    return COL_PLACES.find(item => item.id === id)?.text;
   };
 
   const validateSelection = (fam: string, prof: string, place: string) => {
@@ -153,9 +263,7 @@ export const SentenceMatchingModal: React.FC = () => {
       try { sfx.playSuccess(); } catch {}
       const updated = [...completedTripletIds, matched.id];
       setCompletedTripletIds(updated);
-      setSelectedFamily(null);
-      setSelectedProfession(null);
-      setSelectedPlace(null);
+      clearActivePath();
 
       speakEnglish(matched.sentenceEn);
 
@@ -167,15 +275,14 @@ export const SentenceMatchingModal: React.FC = () => {
     } else {
       try { sfx.playError(); } catch {}
       const correctForFam = TARGET_TRIPLETS.find(t => t.familyId === fam);
-      setSelectedFamily(null);
-      setSelectedProfession(null);
-      setSelectedPlace(null);
+      setActivePathIsInvalid(true);
 
       showFeedback({
         title: '¡Inténtalo de nuevo! / Try Again!',
         message: `Los elementos conectados no corresponden a la ocupación correcta. Recuerda: "${correctForFam?.sentenceEs}" ("${correctForFam?.sentenceEn}").`,
         isSuccess: false,
-        tip: 'Relaciona a cada familiar con su uniforme correspondiente y su lugar de trabajo.'
+        tip: 'Relaciona a cada familiar con su uniforme correspondiente y su lugar de trabajo.',
+        onRetry: clearActivePath
       });
     }
   };
@@ -357,11 +464,22 @@ export const SentenceMatchingModal: React.FC = () => {
         </div>
 
         {/* 3 Columns Organized Layout */}
-        <div style={{
+        <div
+          ref={matchingGridRef}
+          role="group"
+          aria-label="Arrastra desde un personaje, pasando por una ocupación, hasta un lugar de trabajo"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+          style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '8px',
-          position: 'relative'
+          columnGap: '16px',
+          position: 'relative',
+          touchAction: 'none',
+          userSelect: 'none'
         }}>
           {/* COL 1: Personajes */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -369,18 +487,23 @@ export const SentenceMatchingModal: React.FC = () => {
               COL. 1: PERSONAJE
             </div>
             {COL_FAMILY.map(fam => {
-              const isSelected = selectedFamily === fam.id;
+              const isSelected = activePath.some(option => option.id === fam.id);
               const isDone = isFamilyCompleted(fam.id);
 
               return (
                 <button
                   key={fam.id}
+                  ref={element => { optionRefs.current[fam.id] = element; }}
+                  data-match-option
+                  data-match-column={0}
+                  data-match-id={fam.id}
                   disabled={isDone}
-                  onClick={() => handleSelectFamily(fam.id)}
                   style={{
                     padding: '8px 4px',
                     borderRadius: '8px',
-                    border: isSelected ? '3px solid #0284c7' : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
+                    border: isSelected
+                      ? `3px solid ${activePathIsInvalid ? '#dc2626' : '#0284c7'}`
+                      : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
                     backgroundColor: isSelected ? '#e0f2fe' : isDone ? '#dcfce7' : '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
@@ -388,7 +511,9 @@ export const SentenceMatchingModal: React.FC = () => {
                     gap: '4px',
                     cursor: isDone ? 'default' : 'pointer',
                     opacity: isDone ? 0.6 : 1,
-                    position: 'relative'
+                    position: 'relative',
+                    zIndex: 4,
+                    touchAction: 'none'
                   }}
                 >
                   <span style={{ fontSize: '26px' }}>{fam.icon}</span>
@@ -411,18 +536,23 @@ export const SentenceMatchingModal: React.FC = () => {
               COL. 2: OCUPACIÓN
             </div>
             {COL_PROFESSIONS.map(prof => {
-              const isSelected = selectedProfession === prof.id;
+              const isSelected = activePath.some(option => option.id === prof.id);
               const isDone = isProfessionCompleted(prof.id);
 
               return (
                 <button
                   key={prof.id}
+                  ref={element => { optionRefs.current[prof.id] = element; }}
+                  data-match-option
+                  data-match-column={1}
+                  data-match-id={prof.id}
                   disabled={isDone}
-                  onClick={() => handleSelectProfession(prof.id)}
                   style={{
                     padding: '8px 4px',
                     borderRadius: '8px',
-                    border: isSelected ? '3px solid #0284c7' : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
+                    border: isSelected
+                      ? `3px solid ${activePathIsInvalid ? '#dc2626' : '#0284c7'}`
+                      : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
                     backgroundColor: isSelected ? '#e0f2fe' : isDone ? '#dcfce7' : '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
@@ -430,7 +560,9 @@ export const SentenceMatchingModal: React.FC = () => {
                     gap: '4px',
                     cursor: isDone ? 'default' : 'pointer',
                     opacity: isDone ? 0.6 : 1,
-                    position: 'relative'
+                    position: 'relative',
+                    zIndex: 4,
+                    touchAction: 'none'
                   }}
                 >
                   <span style={{ fontSize: '26px' }}>{prof.icon}</span>
@@ -453,18 +585,23 @@ export const SentenceMatchingModal: React.FC = () => {
               COL. 3: LUGAR
             </div>
             {COL_PLACES.map(place => {
-              const isSelected = selectedPlace === place.id;
+              const isSelected = activePath.some(option => option.id === place.id);
               const isDone = isPlaceCompleted(place.id);
 
               return (
                 <button
                   key={place.id}
+                  ref={element => { optionRefs.current[place.id] = element; }}
+                  data-match-option
+                  data-match-column={2}
+                  data-match-id={place.id}
                   disabled={isDone}
-                  onClick={() => handleSelectPlace(place.id)}
                   style={{
                     padding: '8px 4px',
                     borderRadius: '8px',
-                    border: isSelected ? '3px solid #0284c7' : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
+                    border: isSelected
+                      ? `3px solid ${activePathIsInvalid ? '#dc2626' : '#0284c7'}`
+                      : isDone ? '2px solid #16a34a' : '2px solid #cbd5e1',
                     backgroundColor: isSelected ? '#e0f2fe' : isDone ? '#dcfce7' : '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
@@ -472,7 +609,9 @@ export const SentenceMatchingModal: React.FC = () => {
                     gap: '4px',
                     cursor: isDone ? 'default' : 'pointer',
                     opacity: isDone ? 0.6 : 1,
-                    position: 'relative'
+                    position: 'relative',
+                    zIndex: 4,
+                    touchAction: 'none'
                   }}
                 >
                   <span style={{ fontSize: '26px' }}>{place.icon}</span>
@@ -488,6 +627,53 @@ export const SentenceMatchingModal: React.FC = () => {
               );
             })}
           </div>
+
+          <svg
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              overflow: 'visible',
+              pointerEvents: 'none',
+              zIndex: 5
+            }}
+          >
+            {TARGET_TRIPLETS.filter(target => completedTripletIds.includes(target.id)).map(target => {
+              const points = getLinePoints([
+                { id: target.familyId, column: 0 },
+                { id: target.professionId, column: 1 },
+                { id: target.placeId, column: 2 }
+              ]);
+              return points ? (
+                <polyline
+                  key={target.id}
+                  points={points}
+                  fill="none"
+                  stroke={target.color}
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.72"
+                />
+              ) : null;
+            })}
+            {activePath.length > 1 && (() => {
+              const points = getLinePoints(activePath);
+              return points ? (
+                <polyline
+                  points={points}
+                  fill="none"
+                  stroke={activePathIsInvalid ? '#dc2626' : '#475569'}
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.72"
+                />
+              ) : null;
+            })()}
+          </svg>
         </div>
 
         {/* Resumen de Conexión actual */}
@@ -502,27 +688,16 @@ export const SentenceMatchingModal: React.FC = () => {
           fontSize: '11px'
         }}>
           <div>
-            <strong>Línea:</strong>{' '}
+            <strong>Arrastra:</strong>{' '}
             <span style={{ color: '#0284c7', fontWeight: 800 }}>
-              {selectedFamily ? COL_FAMILY.find(f => f.id === selectedFamily)?.text : '...'}
-            </span>
-            {' ➔ '}
-            <span style={{ color: '#0284c7', fontWeight: 800 }}>
-              {selectedProfession ? COL_PROFESSIONS.find(p => p.id === selectedProfession)?.text : '...'}
-            </span>
-            {' ➔ '}
-            <span style={{ color: '#0284c7', fontWeight: 800 }}>
-              {selectedPlace ? COL_PLACES.find(p => p.id === selectedPlace)?.text : '...'}
+              {activePath.map(option => getOptionText(option)).filter(Boolean).join(' → ') ||
+                'personaje → ocupación → lugar (un elemento por columna)'}
             </span>
           </div>
 
-          {(selectedFamily || selectedProfession) && (
+          {activePath.length > 0 && (
             <button
-              onClick={() => {
-                setSelectedFamily(null);
-                setSelectedProfession(null);
-                setSelectedPlace(null);
-              }}
+              onClick={clearActivePath}
               style={{
                 background: '#e2e8f0',
                 border: 'none',

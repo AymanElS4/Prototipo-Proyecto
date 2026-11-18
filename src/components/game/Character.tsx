@@ -7,20 +7,15 @@ interface CharacterProps {
   player: PlayerState;
 }
 
+const CHARACTER_SPRITES: Record<PlayerState['direction'], string> = {
+  up: MODERN_ASSETS.characters.heroBack,
+  down: MODERN_ASSETS.characters.hero,
+  left: MODERN_ASSETS.characters.heroLeft,
+  right: MODERN_ASSETS.characters.heroRight
+};
+
 export const Character: React.FC<CharacterProps> = ({ player }) => {
   const { customization, x, y, direction, isMoving } = player;
-
-  // Select sprite according to movement direction
-  const getCharacterSprite = () => {
-    switch (direction) {
-      case 'up': return MODERN_ASSETS.characters.heroBack;
-      case 'left': return MODERN_ASSETS.characters.heroLeft;
-      case 'right': return MODERN_ASSETS.characters.heroRight;
-      case 'down':
-      default:
-        return MODERN_ASSETS.characters.hero;
-    }
-  };
 
   return (
     <div
@@ -65,7 +60,7 @@ export const Character: React.FC<CharacterProps> = ({ player }) => {
           filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.4))'
         }}
       >
-        <PixelImage src={getCharacterSprite()} alt="Player" width={22} height={44} />
+        <PixelImage src={CHARACTER_SPRITES[direction]} alt="Player" width={22} height={44} />
 
         {/* Hat Accessory */}
         {customization.hat === 'chullo' && (
